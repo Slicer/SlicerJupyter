@@ -31,7 +31,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     )
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
-  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)    
+  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(EP_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
@@ -53,28 +54,20 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
       # Install directories
-      # XXX The following two variables should be udpated to match the
-      #     requirements of a real CMake based external project
-      # XXX Then, this comment and the one above should be removed. Really.
-      -DFOO_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -DFOO_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dnlohmann_json_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dnlohmann_json_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       # Options
-      -DCMAKE_INSTALL_PREFIX:PATH=${EP_BINARY_DIR}/install
+      -DCMAKE_INSTALL_PREFIX:PATH=${EP_INSTALL_DIR}
       -DBUILD_TESTING:BOOL=OFF
-    # CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This CONFIGURE_COMMAND is just here as a placeholder."
-    #   "Remove this line to enable configuring of a real CMake based external project"
-    # BUILD_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This BUILD_COMMAND is just here as a placeholder."
-    #   "Remove this line to enable building of a real CMake based external project"
-    #INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
     )
-  set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(${proj}_DIR ${EP_INSTALL_DIR}/lib/cmake/nlohmann_json/)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
 endif()
 
 mark_as_superbuild(${proj}_DIR:PATH)
+
+ExternalProject_Message(${proj} "${proj}_DIR:${${proj}_DIR}")

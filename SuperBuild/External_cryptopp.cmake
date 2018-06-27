@@ -27,22 +27,52 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
     #CRYPTOPP_5_6_5
-    master
+    origin/master
     QUIET
     )
 
-  set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
+  set(cryptopp_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj}-source)
+  ExternalProject_Add(cryptopp-source
+    GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
+    GIT_TAG "${${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG}"
+    SOURCE_DIR ${cryptopp_SOURCE_DIR}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    )
+
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_REPOSITORY
+    "${EP_GIT_PROTOCOL}://github.com/jcfr/cryptopp-cmake.git"
+    QUIET
+    )
+
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_TAG
+    origin/miscellaneous-tweaks
+    QUIET
+    )
+
+  set(crypto_cmake_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(EP_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
+
+  set(cryptopp_disable_sse3 OFF)
+  if(UNIX AND NOT APPLE)
+    # Avoid the following error on "g++ (Ubuntu 5.2.1-22ubuntu2) 5.2.1 20151010"
+    # /usr/lib/gcc/x86_64-linux-gnu/5/include/tmmintrin.h:136:1:
+    #   error: inlining failed in call to always_inline ‘__m128i _mm_shuffle_epi8(__m128i, __m128i)’:
+    #          target specific option mismatch _mm_shuffle_epi8 (__m128i __X, __m128i __Y)
+    set(cryptopp_disable_sse3 ON)
+  endif()
   
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
-    GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
-    GIT_TAG "${${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG}"
-    SOURCE_DIR ${EP_SOURCE_DIR}
+    GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_REPOSITORY}"
+    GIT_TAG "${${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_TAG}"
+    SOURCE_DIR ${crypto_cmake_SOURCE_DIR}
     BINARY_DIR ${EP_BINARY_DIR}
     CMAKE_CACHE_ARGS
-      -DBUILD_SHARED:BOOL=FALSE
-      -DBUILD_STATIC:BOOL=TRUE
       # Compiler settings
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
@@ -56,28 +86,26 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
       # Install directories
-      # XXX The following two variables should be udpated to match the
-      #     requirements of a real CMake based external project
-      # XXX Then, this comment and the one above should be removed. Really.
-      -DFOO_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -DFOO_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dcryptopp_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dcryptopp_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -DCMAKE_INSTALL_PREFIX:PATH=${EP_INSTALL_DIR}
       # Options
+      -DSRC_DIR:PATH=${cryptopp_SOURCE_DIR}
       -DBUILD_TESTING:BOOL=OFF
-      -DCMAKE_INSTALL_PREFIX:PATH=${EP_BINARY_DIR}/CMakeFiles/Export 
-    # CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This CONFIGURE_COMMAND is just here as a placeholder."
-    #   "Remove this line to enable configuring of a real CMake based external project"
-    # BUILD_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This BUILD_COMMAND is just here as a placeholder."
-    #  "Remove this line to enable building of a real CMake based external project"
-    #INSTALL_COMMAND ""
+      -DBUILD_SHARED:BOOL=FALSE
+      -DBUILD_STATIC:BOOL=TRUE
+      -DDISABLE_SSSE3:BOOL=${cryptopp_disable_sse3}
+      -Dcryptocpp_DISPLAY_CMAKE_SUPPORT_WARNING:BOOL=OFF
     DEPENDS
+      cryptopp-source
       ${${proj}_DEPENDS}
     )
-  set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(${proj}_DIR ${EP_INSTALL_DIR}/lib/cmake/cryptopp/)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
 endif()
 
 mark_as_superbuild(${proj}_DIR:PATH)
+
+ExternalProject_Message(${proj} "${proj}_DIR:${${proj}_DIR}")

@@ -20,13 +20,13 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/QuantStack/xeus.git"
+    "${EP_GIT_PROTOCOL}://github.com/jcfr/xeus.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "0.12.0"
+    "61db8a2af400e68bd91a68247a3abe90c46b371d" # Branch fix-build-error-and-improve-buildsystem
     QUIET
     )
 
@@ -40,11 +40,6 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     SOURCE_DIR ${EP_SOURCE_DIR}
     BINARY_DIR ${EP_BINARY_DIR}
     CMAKE_CACHE_ARGS
-      -Dnlohmann_json_DIR:PATH=${nlohmann_json_DIR}/install/lib/cmake/nlohmann_json 
-      -Dxtl_DIR:PATH=${xtl_DIR}
-      -DZeroMQ_DIR:PATH=${ZeroMQ_DIR}
-      -Dcppzmq_DIR:PATH=${cppzmq_DIR}
-      -Dcryptopp_DIR:PATH=${cryptopp_DIR}
       # Compiler settings
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
@@ -58,19 +53,16 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
       # Install directories
-      # XXX The following two variables should be udpated to match the
-      #     requirements of a real CMake based external project
-      # XXX Then, this comment and the one above should be removed. Really.
-      -DFOO_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -DFOO_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dxeus_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dxeus_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       # Options
       -DBUILD_TESTING:BOOL=OFF
-    # CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This CONFIGURE_COMMAND is just here as a placeholder."
-    #   "Remove this line to enable configuring of a real CMake based external project"
-    # BUILD_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This BUILD_COMMAND is just here as a placeholder."
-    #   "Remove this line to enable building of a real CMake based external project"
+      # Depdendencies
+      -Dnlohmann_json_DIR:PATH=${nlohmann_json_DIR}
+      -Dxtl_DIR:PATH=${xtl_DIR}
+      -DZeroMQ_DIR:PATH=${ZeroMQ_DIR}
+      -Dcppzmq_DIR:PATH=${cppzmq_DIR}
+      -Dcryptopp_DIR:PATH=${cryptopp_DIR}
     INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
@@ -82,3 +74,5 @@ else()
 endif()
 
 mark_as_superbuild(${proj}_DIR:PATH)
+
+ExternalProject_Message(${proj} "${proj}_DIR:${${proj}_DIR}")
