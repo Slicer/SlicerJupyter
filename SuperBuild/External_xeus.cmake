@@ -40,6 +40,11 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     SOURCE_DIR ${EP_SOURCE_DIR}
     BINARY_DIR ${EP_BINARY_DIR}
     CMAKE_CACHE_ARGS
+      -Dnlohmann_json_DIR:PATH=${nlohmann_json_DIR}/install/lib/cmake/nlohmann_json 
+      -Dxtl_DIR:PATH=${xtl_DIR}
+      -DZeroMQ_DIR:PATH=${ZeroMQ_DIR}
+      -Dcppzmq_DIR:PATH=${cppzmq_DIR}
+      -Dcryptopp_DIR:PATH=${cryptopp_DIR}
       # Compiler settings
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}

@@ -30,6 +30,9 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     QUIET
     )
 
+  set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
+  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)    
+
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
@@ -56,6 +59,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DFOO_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       -DFOO_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       # Options
+      -DCMAKE_INSTALL_PREFIX:PATH=${EP_BINARY_DIR}/install
       -DBUILD_TESTING:BOOL=OFF
     # CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo
     #   "This CONFIGURE_COMMAND is just here as a placeholder."
@@ -63,7 +67,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     # BUILD_COMMAND ${CMAKE_COMMAND} -E echo
     #   "This BUILD_COMMAND is just here as a placeholder."
     #   "Remove this line to enable building of a real CMake based external project"
-    INSTALL_COMMAND ""
+    #INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
     )

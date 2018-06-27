@@ -26,12 +26,14 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "0.12.0"
+    "master"
     QUIET
     )
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+
+  message(WARNING "ZeroMQ_DIR=${ZeroMQ_DIR}")
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
@@ -40,6 +42,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     SOURCE_DIR ${EP_SOURCE_DIR}
     BINARY_DIR ${EP_BINARY_DIR}
     CMAKE_CACHE_ARGS
+      -DZeroMQ_DIR:PATH=${ZeroMQ_DIR} 
       # Compiler settings
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
@@ -63,9 +66,9 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     # CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo
     #   "This CONFIGURE_COMMAND is just here as a placeholder."
     #   "Remove this line to enable configuring of a real CMake based external project"
-    # BUILD_COMMAND ${CMAKE_COMMAND} -E echo
-    #   "This BUILD_COMMAND is just here as a placeholder."
-    #   "Remove this line to enable building of a real CMake based external project"
+    BUILD_COMMAND ${CMAKE_COMMAND} -E echo
+      "This BUILD_COMMAND is just here as a placeholder."
+      "Remove this line to enable building of a real CMake based external project"
     INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
