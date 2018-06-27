@@ -15,7 +15,7 @@ project(SlicerJupyter)
 set(EXTENSION_HOMEPAGE "http://slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/SlicerJupyter")
 set(EXTENSION_CATEGORY "Informatics")
 set(EXTENSION_CONTRIBUTORS "Andras Lasso (PerkLab), Jean-Christoph Fillion-Robin (Kitware)")
-set(EXTENSION_DESCRIPTION "This is an example of an extension using SuperBuild to build a dependent project named Foo")
+set(EXTENSION_DESCRIPTION "Extension for 3D Slicer that allows the application to be used from Jupyter notebook")
 set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/SlicerJupyter.png")
 set(EXTENSION_SCREENSHOTURLS "http://www.example.com/Slicer/Extensions/SlicerJupyter/Screenshots/1.png")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated string, a list or 'NA' if any
