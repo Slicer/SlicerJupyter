@@ -3,6 +3,9 @@
 #include "xSlicerInterpreter.h"
 #include "xeus/xguid.hpp"
 
+#include <qSlicerApplication.h>
+#include <qSlicerPythonManager.h>
+
 void xSlicerInterpreter::configure_impl()
 {
     auto handle_comm_opened = [](xeus::xcomm&& comm, const xeus::xmessage&) {
@@ -27,8 +30,12 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     std::cout << "allow_stdin: " << allow_stdin << std::endl;
     std::cout << std::endl;
 
+    qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
+
+    QVariant executeResult = pythonManager->executeString(QString::fromStdString(code));
+
     xjson pub_data;
-    pub_data["text/plain"] = code;
+    pub_data["text/plain"] = executeResult.toString().toStdString();
     publish_execution_result(execution_counter, std::move(pub_data), xjson());
 
     xjson result;
