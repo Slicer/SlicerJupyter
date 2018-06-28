@@ -18,35 +18,35 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerJupyterKernelFooBarWidget_h
-#define __qSlicerJupyterKernelFooBarWidget_h
+#ifndef __qSlicerJupyterKernelControlWidget_h
+#define __qSlicerJupyterKernelControlWidget_h
 
 // Qt includes
 #include <QWidget>
 
-// FooBar Widgets includes
+// JupyterKernelControl Widgets includes
 #include "qSlicerJupyterKernelModuleWidgetsExport.h"
 
-class qSlicerJupyterKernelFooBarWidgetPrivate;
+class qSlicerJupyterKernelControlWidgetPrivate;
 
 /// \ingroup Slicer_QtModules_JupyterKernel
-class Q_SLICER_MODULE_JUPYTERKERNEL_WIDGETS_EXPORT qSlicerJupyterKernelFooBarWidget
+class Q_SLICER_MODULE_JUPYTERKERNEL_WIDGETS_EXPORT qSlicerJupyterKernelControlWidget
   : public QWidget
 {
   Q_OBJECT
 public:
   typedef QWidget Superclass;
-  qSlicerJupyterKernelFooBarWidget(QWidget *parent=0);
-  virtual ~qSlicerJupyterKernelFooBarWidget();
+  qSlicerJupyterKernelControlWidget(QWidget *parent=0);
+  virtual ~qSlicerJupyterKernelControlWidget();
 
 protected slots:
 
 protected:
-  QScopedPointer<qSlicerJupyterKernelFooBarWidgetPrivate> d_ptr;
+  QScopedPointer<qSlicerJupyterKernelControlWidgetPrivate> d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerJupyterKernelFooBarWidget);
-  Q_DISABLE_COPY(qSlicerJupyterKernelFooBarWidget);
+  Q_DECLARE_PRIVATE(qSlicerJupyterKernelControlWidget);
+  Q_DISABLE_COPY(qSlicerJupyterKernelControlWidget);
 };
 
 #endif

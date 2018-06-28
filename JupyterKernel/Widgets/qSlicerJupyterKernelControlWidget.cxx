@@ -18,55 +18,59 @@
 
 ==============================================================================*/
 
-// FooBar Widgets includes
-#include "qSlicerJupyterKernelFooBarWidget.h"
-#include "ui_qSlicerJupyterKernelFooBarWidget.h"
+// JupyterKernelControl Widgets includes
+#include "qSlicerJupyterKernelControlWidget.h"
+#include "ui_qSlicerJupyterKernelControlWidget.h"
+
+// Qt includes
+#include <QDebug>
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_JupyterKernel
-class qSlicerJupyterKernelFooBarWidgetPrivate
-  : public Ui_qSlicerJupyterKernelFooBarWidget
+class qSlicerJupyterKernelControlWidgetPrivate
+  : public Ui_qSlicerJupyterKernelControlWidget
 {
-  Q_DECLARE_PUBLIC(qSlicerJupyterKernelFooBarWidget);
+  Q_DECLARE_PUBLIC(qSlicerJupyterKernelControlWidget);
 protected:
-  qSlicerJupyterKernelFooBarWidget* const q_ptr;
+  qSlicerJupyterKernelControlWidget* const q_ptr;
 
 public:
-  qSlicerJupyterKernelFooBarWidgetPrivate(
-    qSlicerJupyterKernelFooBarWidget& object);
-  virtual void setupUi(qSlicerJupyterKernelFooBarWidget*);
+  qSlicerJupyterKernelControlWidgetPrivate(
+    qSlicerJupyterKernelControlWidget& object);
+  virtual void setupUi(qSlicerJupyterKernelControlWidget*);
 };
 
 // --------------------------------------------------------------------------
-qSlicerJupyterKernelFooBarWidgetPrivate
-::qSlicerJupyterKernelFooBarWidgetPrivate(
-  qSlicerJupyterKernelFooBarWidget& object)
+qSlicerJupyterKernelControlWidgetPrivate
+::qSlicerJupyterKernelControlWidgetPrivate(
+  qSlicerJupyterKernelControlWidget& object)
   : q_ptr(&object)
 {
+
 }
 
 // --------------------------------------------------------------------------
-void qSlicerJupyterKernelFooBarWidgetPrivate
-::setupUi(qSlicerJupyterKernelFooBarWidget* widget)
+void qSlicerJupyterKernelControlWidgetPrivate
+::setupUi(qSlicerJupyterKernelControlWidget* widget)
 {
-  this->Ui_qSlicerJupyterKernelFooBarWidget::setupUi(widget);
+  this->Ui_qSlicerJupyterKernelControlWidget::setupUi(widget);
 }
 
 //-----------------------------------------------------------------------------
-// qSlicerJupyterKernelFooBarWidget methods
+// qSlicerJupyterKernelControlWidget methods
 
 //-----------------------------------------------------------------------------
-qSlicerJupyterKernelFooBarWidget
-::qSlicerJupyterKernelFooBarWidget(QWidget* parentWidget)
+qSlicerJupyterKernelControlWidget
+::qSlicerJupyterKernelControlWidget(QWidget* parentWidget)
   : Superclass( parentWidget )
-  , d_ptr( new qSlicerJupyterKernelFooBarWidgetPrivate(*this) )
+  , d_ptr( new qSlicerJupyterKernelControlWidgetPrivate(*this) )
 {
-  Q_D(qSlicerJupyterKernelFooBarWidget);
+  Q_D(qSlicerJupyterKernelControlWidget);
   d->setupUi(this);
 }
 
 //-----------------------------------------------------------------------------
-qSlicerJupyterKernelFooBarWidget
-::~qSlicerJupyterKernelFooBarWidget()
+qSlicerJupyterKernelControlWidget
+::~qSlicerJupyterKernelControlWidget()
 {
 }

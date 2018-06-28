@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qSlicerJupyterKernelFooBarWidget</class>
- <widget class="QWidget" name="qSlicerJupyterKernelFooBarWidget">
+ <class>qSlicerJupyterKernelControlWidget</class>
+ <widget class="QWidget" name="qSlicerJupyterKernelControlWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -18,9 +18,9 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QPushButton" name="FooBarButton">
+    <widget class="QPushButton" name="StartKernelButton">
      <property name="text">
-      <string>Foo Bar</string>
+      <string>Start Kernel</string>
      </property>
     </widget>
    </item>
