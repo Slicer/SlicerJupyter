@@ -64,8 +64,8 @@ namespace xeus
             { m_shell, 0, ZMQ_POLLIN, 0 }
         };
 
-        unsigned int timeout_ms = 250;
-        zmq::poll(&items[0], 2, timeout_ms * 1000);
+        unsigned int timeout_ms = 10;
+        zmq::poll(&items[0], 2, timeout_ms);
 
         if (items[0].revents & ZMQ_POLLIN)
         {
