@@ -66,6 +66,14 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     set(cryptopp_disable_sse3 ON)
   endif()
   
+  set(cryptopp_disable_asm OFF)
+  if (WIN32)
+    # Avoid the following error on Visual Studio
+    #  D:\D\SJ_R\cryptopp-source\rdrand.asm(1): fatal error A1000: cannot open file : cryptopp-object.dir\Release\/D_
+    #  /D/SJ_R/cryptopp-souÇ [D:\D\SJ_R\cryptopp-build\cryptopp-object.vcxproj] [D:\D\SJ_R\cryptopp.vcxproj]
+    set(cryptopp_disable_asm ON)
+  endif()
+
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_REPOSITORY}"
@@ -95,6 +103,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DBUILD_SHARED:BOOL=FALSE
       -DBUILD_STATIC:BOOL=TRUE
       -DDISABLE_SSSE3:BOOL=${cryptopp_disable_sse3}
+      -DDISABLE_ASM:BOOL=${cryptopp_disable_asm}
       -Dcryptocpp_DISPLAY_CMAKE_SUPPORT_WARNING:BOOL=OFF
     DEPENDS
       cryptopp-source

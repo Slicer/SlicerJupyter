@@ -20,7 +20,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/zeromq/libzmq.git"
+    "${EP_GIT_PROTOCOL}://github.com/jcfr/libzmq.git"
     QUIET
     )
 

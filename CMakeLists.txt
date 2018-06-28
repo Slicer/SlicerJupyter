@@ -1,12 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-#set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
-set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/cppzmq/libzmq-pkg-config" ${CMAKE_MODULE_PATH})
-#d:\D\SlicerJupyter_R\cppzmq\libzmq-pkg-config\FindZeroMQ.cmake 
-set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/nlohmann_json-build/CMakeFiles/Export/lib/cmake" ${CMAKE_MODULE_PATH})
-#d:\D\SlicerJupyter_R\nlohmann_json-build\CMakeFiles\Export\lib\cmake\nlohmann_json 
-
-message(WARNING "CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
+#set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/cppzmq/libzmq-pkg-config" ${CMAKE_MODULE_PATH})
+#set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/nlohmann_json-build/CMakeFiles/Export/lib/cmake" ${CMAKE_MODULE_PATH})
 
 project(SlicerJupyter)
 
