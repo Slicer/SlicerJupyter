@@ -26,7 +26,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "61db8a2af400e68bd91a68247a3abe90c46b371d" # Branch fix-build-error-and-improve-buildsystem
+    "f5391f20d088a831df235ddda5217bb248d48a75" # Branch fix-build-error-and-improve-buildsystem
     QUIET
     )
 
