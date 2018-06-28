@@ -60,6 +60,13 @@ slicerMacroBuildLoadableModule(
   )
 
 #-----------------------------------------------------------------------------
+configure_file(
+  Resources/kernel.json.in
+  ${SlicerJupyter_BINARY_DIR}/slicer_kernel/kernel.json
+  @ONLY
+  )
+
+#-----------------------------------------------------------------------------
 if(BUILD_TESTING)
   add_subdirectory(Testing)
 endif()

@@ -21,9 +21,21 @@
 // JupyterKernelControl Widgets includes
 #include "qSlicerJupyterKernelControlWidget.h"
 #include "ui_qSlicerJupyterKernelControlWidget.h"
+#include "xSlicerInterpreter.h"
+#include "xSlicerServer.h"
+#include "xSlicerKernel.h"
+
+// XEUS includes
+#include "xeus/xkernel.hpp"
+#include "xeus/xkernel_configuration.hpp"
+
+// Slicer includes
+#include "qSlicerApplication.h"
+#include "qSlicerCommandOptions.h"
 
 // Qt includes
 #include <QDebug>
+#include <QFileInfo>
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_JupyterKernel
@@ -38,15 +50,18 @@ public:
   qSlicerJupyterKernelControlWidgetPrivate(
     qSlicerJupyterKernelControlWidget& object);
   virtual void setupUi(qSlicerJupyterKernelControlWidget*);
+
+  bool Started;
+  xeus::xSlicerKernel * Kernel;
+  xeus::xconfiguration Config;
 };
 
 // --------------------------------------------------------------------------
 qSlicerJupyterKernelControlWidgetPrivate
 ::qSlicerJupyterKernelControlWidgetPrivate(
   qSlicerJupyterKernelControlWidget& object)
-  : q_ptr(&object)
+  : q_ptr(&object), Started(false)
 {
-
 }
 
 // --------------------------------------------------------------------------
@@ -73,4 +88,31 @@ qSlicerJupyterKernelControlWidget
 qSlicerJupyterKernelControlWidget
 ::~qSlicerJupyterKernelControlWidget()
 {
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerJupyterKernelControlWidget::startKernel(const QString& connectionFile)
+{
+  Q_D(qSlicerJupyterKernelControlWidget);
+  if (!QFileInfo::exists(connectionFile))
+    {
+    qWarning() << "startKernel" << "connectionFile does not exist" << connectionFile;
+    return;
+    }
+  if(d->Started)
+    {
+    qWarning() << "Kernel already started";
+    }
+  else
+    {
+    d->Config = xeus::load_configuration(connectionFile.toStdString());
+
+    using interpreter_ptr = std::unique_ptr<xSlicerInterpreter>;
+    interpreter_ptr interpreter = interpreter_ptr(new xSlicerInterpreter());
+    d->Kernel = new xeus::xSlicerKernel(d->Config, "slicer", std::move(interpreter), xeus::make_xSlicerServer);
+
+    d->Kernel->start();
+
+    d->Started = true;
+    }
 }

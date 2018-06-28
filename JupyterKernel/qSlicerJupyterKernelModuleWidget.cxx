@@ -60,3 +60,10 @@ void qSlicerJupyterKernelModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 }
+
+//-----------------------------------------------------------------------------
+qSlicerJupyterKernelControlWidget* qSlicerJupyterKernelModuleWidget::controlWidget()
+{
+  Q_D(qSlicerJupyterKernelModuleWidget);
+  return d->Control;
+}

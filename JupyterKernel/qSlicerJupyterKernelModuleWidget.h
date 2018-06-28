@@ -23,6 +23,7 @@
 
 #include "qSlicerJupyterKernelModuleExport.h"
 
+class qSlicerJupyterKernelControlWidget;
 class qSlicerJupyterKernelModuleWidgetPrivate;
 class vtkMRMLNode;
 
@@ -38,8 +39,7 @@ public:
   qSlicerJupyterKernelModuleWidget(QWidget *parent=0);
   virtual ~qSlicerJupyterKernelModuleWidget();
 
-public slots:
-
+  Q_INVOKABLE qSlicerJupyterKernelControlWidget* controlWidget();
 
 protected:
   QScopedPointer<qSlicerJupyterKernelModuleWidgetPrivate> d_ptr;

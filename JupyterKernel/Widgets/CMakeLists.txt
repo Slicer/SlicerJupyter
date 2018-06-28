@@ -1,5 +1,7 @@
 project(qSlicer${MODULE_NAME}ModuleWidgets)
 
+find_package(xeus REQUIRED)
+
 set(KIT ${PROJECT_NAME})
 
 set(${KIT}_EXPORT_DIRECTIVE "Q_SLICER_MODULE_${MODULE_NAME_UPPER}_WIDGETS_EXPORT")
@@ -10,6 +12,12 @@ set(${KIT}_INCLUDE_DIRECTORIES
 set(${KIT}_SRCS
   qSlicer${MODULE_NAME}ControlWidget.cxx
   qSlicer${MODULE_NAME}ControlWidget.h
+  xSlicerInterpreter.cxx
+  xSlicerInterpreter.h
+  xSlicerKernel.cxx
+  xSlicerKernel.h
+  xSlicerServer.cxx
+  xSlicerServer.h
   )
 
 set(${KIT}_MOC_SRCS
@@ -26,6 +34,7 @@ set(${KIT}_RESOURCES
 
 set(${KIT}_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
+  xeus
   )
 
 #-----------------------------------------------------------------------------

@@ -1,0 +1,13 @@
+{
+    "display_name": "Slicer",
+    "language" : "cpp",
+    "argv": [
+        "@Slicer_LAUNCHER_EXECUTABLE@",
+        "--additional-module-path",
+        "@SlicerJupyter_BINARY_DIR@/@Slicer_QTLOADABLEMODULES_LIB_DIR@",
+        "--launcher-additional-settings",
+        "@Slicer_ADDITIONAL_LAUNCHER_SETTINGS_FILE@",
+        "--python-code",
+        "print('[{connection_file}]'); slicer.modules.jupyterkernel.widgetRepresentation().controlWidget().startKernel('{connection_file}')"
+    ]
+}

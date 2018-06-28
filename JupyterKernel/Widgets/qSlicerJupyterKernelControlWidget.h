@@ -39,7 +39,9 @@ public:
   qSlicerJupyterKernelControlWidget(QWidget *parent=0);
   virtual ~qSlicerJupyterKernelControlWidget();
 
-protected slots:
+public slots:
+
+  void startKernel(const QString& connectionFile);
 
 protected:
   QScopedPointer<qSlicerJupyterKernelControlWidgetPrivate> d_ptr;
