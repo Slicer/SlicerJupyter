@@ -23,7 +23,6 @@
 #include "ui_qSlicerJupyterKernelControlWidget.h"
 #include "xSlicerInterpreter.h"
 #include "xSlicerServer.h"
-#include "xSlicerKernel.h"
 
 // XEUS includes
 #include "xeus/xkernel.hpp"
@@ -52,7 +51,7 @@ public:
   virtual void setupUi(qSlicerJupyterKernelControlWidget*);
 
   bool Started;
-  xeus::xSlicerKernel * Kernel;
+  xeus::xkernel * Kernel;
   xeus::xconfiguration Config;
 };
 
@@ -109,7 +108,7 @@ void qSlicerJupyterKernelControlWidget::startKernel(const QString& connectionFil
 
     using interpreter_ptr = std::unique_ptr<xSlicerInterpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xSlicerInterpreter());
-    d->Kernel = new xeus::xSlicerKernel(d->Config, "slicer", std::move(interpreter), xeus::make_xSlicerServer);
+    d->Kernel = new xeus::xkernel(d->Config, "slicer", std::move(interpreter), xeus::make_xSlicerServer);
 
     d->Kernel->start();
 

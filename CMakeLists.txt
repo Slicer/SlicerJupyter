@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
-
-#set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/cppzmq/libzmq-pkg-config" ${CMAKE_MODULE_PATH})
-#set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/nlohmann_json-build/CMakeFiles/Export/lib/cmake" ${CMAKE_MODULE_PATH})
+cmake_minimum_required(VERSION 3.8)
 
 project(SlicerJupyter)
 
