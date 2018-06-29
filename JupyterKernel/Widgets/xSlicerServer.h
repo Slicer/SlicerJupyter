@@ -6,21 +6,19 @@
 * The full license is in the file LICENSE, distributed with this software. *
 ****************************************************************************/
 
-#ifndef XSERVER_IMPL_HPP
-#define XSERVER_IMPL_HPP
+#ifndef XSLICER_SERVER_HPP
+#define XSLICER_SERVER_HPP
 
 #include <thread>
 
-#include "xeus/xserver.hpp"
+#include "xeus/private/xserver_impl.hpp"
 #include "xeus/xkernel_configuration.hpp"
-#include "xeus/xpublisher.hpp"
-#include "xeus/xheartbeat.hpp"
 
 #include "qSlicerJupyterKernelModuleWidgetsExport.h"
 
 namespace xeus
 {
-    class xSlicerServer : public xserver
+    class xSlicerServer : public xserver_impl
     {
 
     public:
@@ -32,30 +30,9 @@ namespace xeus
 
         void poll_slot();
 
-    private:
-
-        void send_shell_impl(zmq::multipart_t& message) override;
-        void send_control_impl(zmq::multipart_t& message) override;
-        void send_stdin_impl(zmq::multipart_t& message) override;
-        void publish_impl(zmq::multipart_t& message) override;
+    protected:
 
         void start_impl(zmq::multipart_t& message) override;
-        void poll_impl();
-        void abort_queue_impl(const listener& l, long polling_interval) override;
-        void stop_impl() override;
-
-        void stop_channels();
-
-        zmq::socket_t m_shell;
-        zmq::socket_t m_controller;
-        zmq::socket_t m_stdin;
-        zmq::socket_t m_publisher_pub;
-        zmq::socket_t m_controller_pub;
-
-        xpublisher m_publisher;
-        xheartbeat m_heartbeat;
-
-        bool m_request_stop;
 
         std::thread m_iopub_thread;
         std::thread m_hb_thread;

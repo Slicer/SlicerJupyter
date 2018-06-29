@@ -14,8 +14,6 @@ set(${KIT}_SRCS
   qSlicer${MODULE_NAME}ControlWidget.h
   xSlicerInterpreter.cxx
   xSlicerInterpreter.h
-  xSlicerKernel.cxx
-  xSlicerKernel.h
   xSlicerServer.cxx
   xSlicerServer.h
   )
