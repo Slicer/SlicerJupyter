@@ -3,8 +3,16 @@
 #include "xSlicerInterpreter.h"
 #include "xeus/xguid.hpp"
 
+#include <qMRMLSliceWidget.h>
+#include <qMRMLSliceView.h>
+#include <qMRMLThreeDWidget.h>
+#include <qMRMLThreeDView.h>
+
 #include <qSlicerApplication.h>
+#include <qSlicerLayoutManager.h>
 #include <qSlicerPythonManager.h>
+
+#include <QBuffer>
 
 void xSlicerInterpreter::configure_impl()
 {
@@ -32,10 +40,41 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
 
     qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
 
-    QVariant executeResult = pythonManager->executeString(QString::fromStdString(code));
-
     xjson pub_data;
-    pub_data["text/plain"] = executeResult.toString().toStdString();
+    QString qscode = QString::fromUtf8(code.c_str());
+    QString displayCommand = "display()";
+    if (qscode.endsWith(displayCommand))
+    {
+      QVariant executeResult = pythonManager->executeString(qscode.left(qscode.length()-displayCommand.length()));
+
+      // Make sure display updates are completed
+      qSlicerApplication::application()->processEvents();
+      qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
+      for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
+      {
+        layoutManager->threeDWidget(viewIndex)->threeDView()->forceRender();
+      }
+      foreach(QString sliceViewName, layoutManager->sliceViewNames())
+      {
+        layoutManager->sliceWidget(sliceViewName)->sliceView()->forceRender();
+      }
+
+      // base64 encoding
+      QPixmap screenshot = QPixmap::grabWidget(layoutManager->viewport());
+      QByteArray bArray;
+      QBuffer buffer(&bArray);
+      buffer.open(QIODevice::WriteOnly);
+      screenshot.save(&buffer, "PNG");
+      QString base64 = QString::fromLatin1(bArray.toBase64().data());
+
+      pub_data["image/png"] = base64.toStdString();
+    }
+    else
+    {
+      QVariant executeResult = pythonManager->executeString(QString::fromStdString(code));
+      pub_data["text/plain"] = executeResult.toString().toStdString();
+    }
+
     publish_execution_result(execution_counter, std::move(pub_data), xjson());
 
     xjson result;
