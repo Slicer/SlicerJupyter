@@ -108,7 +108,7 @@ void qSlicerJupyterKernelControlWidget::startKernel(const QString& connectionFil
 
     using interpreter_ptr = std::unique_ptr<xSlicerInterpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xSlicerInterpreter());
-    d->Kernel = new xeus::xkernel(d->Config, "slicer", std::move(interpreter), xeus::make_xSlicerServer);
+    d->Kernel = new xeus::xkernel(d->Config, "slicer", std::move(interpreter), make_xSlicerServer);
 
     d->Kernel->start();
 
