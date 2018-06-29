@@ -20,13 +20,13 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/jcfr/xeus.git"
+    "${EP_GIT_PROTOCOL}://github.com/QuantStack/xeus.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "569c3c007423842e7da53ed2bed5fb87d1e5ffb4" # slicer-0.12.0-2018-06-29-654005d
+    "dfca7176e3ae8cf880dab8786b71414238a8f215" # master
     QUIET
     )
 
