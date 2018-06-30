@@ -1,7 +1,9 @@
 #ifndef xSlicerInterpreter_h
 #define xSlicerInterpreter_h
 
-#include "xeus/xinterpreter.hpp"
+#include <xeus/xinterpreter.hpp>
+
+#include <QStringList>
 
 using xeus::xinterpreter;
 using xeus::xjson;
@@ -43,6 +45,9 @@ private:
     xjson kernel_info_request_impl() override;
 
     void input_reply_impl(const std::string& value) override;
+
+    QStringList m_captured_stdout;
+    QStringList m_captured_stderr;
 };
 
 #endif

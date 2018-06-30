@@ -1,7 +1,8 @@
 #include <iostream>
 
 #include "xSlicerInterpreter.h"
-#include "xeus/xguid.hpp"
+
+#include <xeus/xguid.hpp>
 
 #include <qMRMLSliceWidget.h>
 #include <qMRMLSliceView.h>
@@ -13,6 +14,9 @@
 #include <qSlicerPythonManager.h>
 
 #include <QBuffer>
+#include <QObject>
+
+#include <PythonQt.h>
 
 void xSlicerInterpreter::configure_impl()
 {
@@ -21,6 +25,16 @@ void xSlicerInterpreter::configure_impl()
     };
     comm_manager().register_comm_target("echo_target", handle_comm_opened);
     //using function_type = std::function<void(xeus::xcomm&&, const xeus::xmessage&)>;
+
+    QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut,
+                     [=](const QString& text){
+      m_captured_stdout << text;
+      });
+
+    QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr,
+                     [=](const QString& text){
+      m_captured_stderr << text;
+      });
 }
 
 xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
@@ -38,6 +52,9 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     std::cout << "allow_stdin: " << allow_stdin << std::endl;
     std::cout << std::endl;
 
+    m_captured_stdout.clear();
+    m_captured_stderr.clear();
+
     qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
 
     xjson pub_data;
@@ -51,13 +68,19 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     else
     {
       QVariant executeResult = pythonManager->executeString(QString::fromStdString(code));
-      pub_data["text/plain"] = executeResult.toString().toStdString();
+      pub_data["text/plain"] = m_captured_stdout.join("").toStdString();
     }
-
-    publish_execution_result(execution_counter, std::move(pub_data), xjson());
 
     xjson result;
     result["status"] = "ok";
+    if (pythonManager->pythonErrorOccured())
+      {
+      result["status"] = "error";
+      pub_data["text/plain"] = m_captured_stderr.join("").toStdString();
+      }
+
+    publish_execution_result(execution_counter, std::move(pub_data), xjson());
+
     return result;
 }
 
