@@ -1,5 +1,5 @@
 {
-    "display_name": "Slicer",
+    "display_name": "Slicer @Slicer_VERSION@",
     "language" : "python",
     "argv": [
         "@Slicer_LAUNCHER_EXECUTABLE@",
