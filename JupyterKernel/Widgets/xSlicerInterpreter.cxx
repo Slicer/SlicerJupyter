@@ -142,13 +142,21 @@ xjson xSlicerInterpreter::is_complete_request_impl(const std::string& code)
 
 xjson xSlicerInterpreter::kernel_info_request_impl()
 {
+    QString display_name = QString("Slicer %1.%2").
+        arg(qSlicerApplication::application()->majorVersion()).
+        arg(qSlicerApplication::application()->minorVersion());
+
     xjson result;
-    result["implementation"] = "cpp_echo";
-    result["implementation_version"] = "1.0.0";
-    result["language_info"]["name"] = "cpp";
-    result["language_info"]["version"] = "14.0.0";
-    result["language_info"]["mimetype"] = "text/x-c++src";
-    result["language_info"]["file_extension"] = ".cpp";
+    result["language_info"]["kernelspec"]["name"] = "slicer_kernel";
+    result["language_info"]["kernelspec"]["display_name"] = display_name.toStdString();
+    result["language_info"]["mimetype"] = "text/x-python";
+    result["language_info"]["name"] = "python";
+    result["language_info"]["nbconvert_exporter"] = "python";
+    result["language_info"]["version"] = "2.7.13+";
+    result["language_info"]["file_extension"] = ".py";
+    result["language_info"]["pygments_lexer"] = "ipython3";
+    result["language_info"]["codemirror_mode"]["version"] = 3;
+    result["language_info"]["codemirror_mode"]["name"] = "ipython";
     return result;
 }
 
