@@ -46,28 +46,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     if (qscode.endsWith(displayCommand))
     {
       QVariant executeResult = pythonManager->executeString(qscode.left(qscode.length()-displayCommand.length()));
-
-      // Make sure display updates are completed
-      qSlicerApplication::application()->processEvents();
-      qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
-      for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
-      {
-        layoutManager->threeDWidget(viewIndex)->threeDView()->forceRender();
-      }
-      foreach(QString sliceViewName, layoutManager->sliceViewNames())
-      {
-        layoutManager->sliceWidget(sliceViewName)->sliceView()->forceRender();
-      }
-
-      // base64 encoding
-      QPixmap screenshot = layoutManager->viewport()->grab();
-      QByteArray bArray;
-      QBuffer buffer(&bArray);
-      buffer.open(QIODevice::WriteOnly);
-      screenshot.save(&buffer, "PNG");
-      QString base64 = QString::fromLatin1(bArray.toBase64().data());
-
-      pub_data["image/png"] = base64.toStdString();
+      pub_data["image/png"] = execute_display_command();
     }
     else
     {
@@ -80,6 +59,30 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     xjson result;
     result["status"] = "ok";
     return result;
+}
+
+std::string xSlicerInterpreter::execute_display_command()
+{
+  // Make sure display updates are completed
+  qSlicerApplication::application()->processEvents();
+  qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
+  for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
+  {
+    layoutManager->threeDWidget(viewIndex)->threeDView()->forceRender();
+  }
+  foreach(QString sliceViewName, layoutManager->sliceViewNames())
+  {
+    layoutManager->sliceWidget(sliceViewName)->sliceView()->forceRender();
+  }
+
+  // base64 encoding
+  QPixmap screenshot = layoutManager->viewport()->grab();
+  QByteArray bArray;
+  QBuffer buffer(&bArray);
+  buffer.open(QIODevice::WriteOnly);
+  screenshot.save(&buffer, "PNG");
+  QString base64 = QString::fromLatin1(bArray.toBase64().data());
+  return base64.toStdString();
 }
 
 xjson xSlicerInterpreter::complete_request_impl(const std::string& code,

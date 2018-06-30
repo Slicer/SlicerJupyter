@@ -27,6 +27,8 @@ private:
                                const xjson_node* user_expressions,
                                bool allow_stdin) override;
 
+    std::string execute_display_command();
+
     xjson complete_request_impl(const std::string& code,
                                 int cursor_pos) override;
 
