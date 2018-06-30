@@ -65,6 +65,14 @@ configure_file(
   ${SlicerJupyter_BINARY_DIR}/slicer_kernel/kernel.json
   @ONLY
   )
+foreach(res IN ITEMS 32 64)
+  configure_file(
+    Resources/Icons/Slicer-${res}x${res}.png
+    ${SlicerJupyter_BINARY_DIR}/slicer_kernel/logo-${res}x${res}.png
+    COPYONLY
+    )
+endforeach()
+
 
 #-----------------------------------------------------------------------------
 if(BUILD_TESTING)
