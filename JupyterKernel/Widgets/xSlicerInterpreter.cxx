@@ -60,7 +60,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
       }
 
       // base64 encoding
-      QPixmap screenshot = QPixmap::grabWidget(layoutManager->viewport());
+      QPixmap screenshot = layoutManager->viewport()->grab();
       QByteArray bArray;
       QBuffer buffer(&bArray);
       buffer.open(QIODevice::WriteOnly);
