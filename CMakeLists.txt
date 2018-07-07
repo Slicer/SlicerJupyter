@@ -4,12 +4,12 @@ project(SlicerJupyter)
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
-set(EXTENSION_HOMEPAGE "http://slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/SlicerJupyter")
-set(EXTENSION_CATEGORY "Informatics")
+set(EXTENSION_HOMEPAGE "https://github.com/Slicer/SlicerJupyter")
+set(EXTENSION_CATEGORY "Developer Tools")
 set(EXTENSION_CONTRIBUTORS "Andras Lasso (PerkLab), Jean-Christoph Fillion-Robin (Kitware)")
-set(EXTENSION_DESCRIPTION "Extension for 3D Slicer that allows the application to be used from Jupyter notebook")
-set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/SlicerJupyter.png")
-set(EXTENSION_SCREENSHOTURLS "http://www.example.com/Slicer/Extensions/SlicerJupyter/Screenshots/1.png")
+set(EXTENSION_DESCRIPTION "This extension provides a Jupyter kernel, which allows running Jupyter notebooks in 3D Slicer.")
+set(EXTENSION_ICONURL "https://raw.githubusercontent.com/Slicer/SlicerJupyter/master/SlicerJupyterLogo.png")
+set(EXTENSION_SCREENSHOTURLS "https://raw.githubusercontent.com/NA-MIC/ProjectWeek/master/PW28_2018_GranCanaria/Projects/SlicerJupyter/NotebookOnly.png https://raw.githubusercontent.com/NA-MIC/ProjectWeek/master/PW28_2018_GranCanaria/Projects/SlicerJupyter/NotebookSideBySide.png https://raw.githubusercontent.com/NA-MIC/ProjectWeek/master/PW28_2018_GranCanaria/Projects/SlicerJupyter/JupyterLab.png")
 set(EXTENSION_DEPENDS "NA") # Specified as a space separated string, a list or 'NA' if any
 set(EXTENSION_BUILD_SUBDIRECTORY inner-build)
 
