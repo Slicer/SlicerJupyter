@@ -18,8 +18,7 @@ pip install jupyter
 * Install kernel
 
 ```
-cd /tmp/SlicerJupyter-build/inner-build\
-jupyter-kernelspec install ./slicer_kernel/ --replace --user
+jupyter-kernelspec install /tmp/SlicerJupyter-build/inner-build/share/Slicer-4.9/qt-loadable-modules/JupyterKernel/Slicer-4.9/ --replace --user
 ```
 
 * Start notebook
