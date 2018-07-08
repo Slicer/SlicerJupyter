@@ -9,7 +9,8 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 * Install Python and Jupyter notebook
 * Install 3D Slicer and SlicerJupyter extension, restart Slicer
-* Switch to JupyterKernel module, select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located. On Windows by default it is a location such as _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. Click _Install Slicer kernel in Jupyter_.
+* Switch to JupyterKernel module, select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located. On Windows by default it is a location such as _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_.
+* Click _Install Slicer kernel in Jupyter_.
 
 ## Using Slicer from a notebook
 
