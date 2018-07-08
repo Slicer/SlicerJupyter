@@ -1,5 +1,5 @@
 {
-    "display_name": "Slicer @Slicer_VERSION@",
+    "display_name": "@Slicer_MAIN_PROJECT_APPLICATION_NAME@ @Slicer_VERSION@ dev [@Slicer_HOME@]",
     "language" : "python",
     "argv": [
         "@Slicer_LAUNCHER_EXECUTABLE@",
@@ -9,6 +9,6 @@
         "--launcher-additional-settings",
         "@Slicer_ADDITIONAL_LAUNCHER_SETTINGS_FILE@",
         "--python-code",
-        "print('[{connection_file}]'); slicer.modules.jupyterkernel.widgetRepresentation().controlWidget().startKernel('{connection_file}');slicer.util.mainWindow().showMinimized()"
+        "connection_file=r'{connection_file}'; print('Jupyter connection file: ['+connection_file+']'); slicer.modules.jupyterkernel.startKernel(connection_file);slicer.util.mainWindow().showMinimized()"
     ]
 }

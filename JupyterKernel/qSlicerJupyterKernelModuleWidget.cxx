@@ -22,6 +22,9 @@
 #include "qSlicerJupyterKernelModuleWidget.h"
 #include "ui_qSlicerJupyterKernelModuleWidget.h"
 
+#include "vtkSlicerJupyterKernelLogic.h"
+#include "qSlicerJupyterKernelModule.h"
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerJupyterKernelModuleWidgetPrivate: public Ui_qSlicerJupyterKernelModuleWidget
@@ -59,11 +62,61 @@ void qSlicerJupyterKernelModuleWidget::setup()
   Q_D(qSlicerJupyterKernelModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
+
+  d->PythonScriptsFolderEdit->setFilters(ctkPathLineEdit::Dirs);
+  d->PythonScriptsFolderEdit->setSettingKey("JupyterKernelPythonScriptsDir");
+
+  qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
+  if (kernelModule)
+  {
+    d->KernelFolderValue->setText(kernelModule->kernelFolderPath());
+  }
+
+  connect(d->InstallSlicerKernelPushButton, SIGNAL(clicked()), this, SLOT(onInstallSlicerKernel()));
+  connect(d->StartJupyterNotebookPushButton, SIGNAL(clicked()), this, SLOT(onStartJupyterNotebook()));
+
+  // Hide control section for now.
+  // Currently, it has a button for starting jupyter notebook, but it requires Qt-5.10.
+  // Also, users may want to run the notebook in a virtual environment.
+  d->ControlCollapsibleButton->setVisible(false);
 }
 
 //-----------------------------------------------------------------------------
-qSlicerJupyterKernelControlWidget* qSlicerJupyterKernelModuleWidget::controlWidget()
+void qSlicerJupyterKernelModuleWidget::onInstallSlicerKernel()
 {
   Q_D(qSlicerJupyterKernelModuleWidget);
-  return d->Control;
+  d->PythonScriptsFolderEdit->addCurrentPathToHistory();
+  qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
+  if (!kernelModule)
+  {
+    qWarning() << Q_FUNC_INFO << " failed: invalid module";
+    return;
+  }
+
+  d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation in progress..."));
+  QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+  bool success = kernelModule->installSlicerKernel(d->PythonScriptsFolderEdit->currentPath());
+  QApplication::restoreOverrideCursor();
+  if (success)
+  {
+    d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation completed successfully."));
+  }
+  else
+  {
+    d->InstallSlicerKernelStatusLabel->setText(tr("Installation failed. See log for details."));
+  }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerJupyterKernelModuleWidget::onStartJupyterNotebook()
+{
+  Q_D(qSlicerJupyterKernelModuleWidget);
+  d->PythonScriptsFolderEdit->addCurrentPathToHistory();
+  qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
+  if (!kernelModule)
+  {
+    qWarning() << Q_FUNC_INFO << " failed: invalid module";
+    return;
+  }
+  kernelModule->startJupyterNotebook(d->PythonScriptsFolderEdit->currentPath());
 }

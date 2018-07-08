@@ -168,12 +168,18 @@ xjson xSlicerInterpreter::is_complete_request_impl(const std::string& code)
 
 xjson xSlicerInterpreter::kernel_info_request_impl()
 {
-    QString display_name = QString("Slicer %1.%2").
+    QString kernel_name = QString("%1-%2.%3"). // example: slicer-4.9
+        arg(qSlicerApplication::application()->applicationName().toLower()).
+        arg(qSlicerApplication::application()->majorVersion()).
+        arg(qSlicerApplication::application()->minorVersion());
+
+    QString display_name = QString("%1 %2.%3"). // example: Slicer 4.9
+        arg(qSlicerApplication::application()->applicationName()).
         arg(qSlicerApplication::application()->majorVersion()).
         arg(qSlicerApplication::application()->minorVersion());
 
     xjson result;
-    result["language_info"]["kernelspec"]["name"] = "slicer_kernel";
+    result["language_info"]["kernelspec"]["name"] = kernel_name.toStdString();
     result["language_info"]["kernelspec"]["display_name"] = display_name.toStdString();
     result["language_info"]["mimetype"] = "text/x-python";
     result["language_info"]["name"] = "python";

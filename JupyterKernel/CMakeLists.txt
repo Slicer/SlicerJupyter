@@ -5,9 +5,10 @@ set(MODULE_TITLE ${MODULE_NAME})
 
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
+find_package(xeus REQUIRED)
+
 #-----------------------------------------------------------------------------
 add_subdirectory(Logic)
-add_subdirectory(Widgets)
 
 #-----------------------------------------------------------------------------
 set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
@@ -16,8 +17,6 @@ set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
-  ${CMAKE_CURRENT_SOURCE_DIR}/Widgets
-  ${CMAKE_CURRENT_BINARY_DIR}/Widgets
   )
 
 set(MODULE_SRCS
@@ -25,6 +24,10 @@ set(MODULE_SRCS
   qSlicer${MODULE_NAME}Module.h
   qSlicer${MODULE_NAME}ModuleWidget.cxx
   qSlicer${MODULE_NAME}ModuleWidget.h
+  xSlicerInterpreter.cxx
+  xSlicerInterpreter.h
+  xSlicerServer.cxx
+  xSlicerServer.h  
   )
 
 set(MODULE_MOC_SRCS
@@ -38,7 +41,7 @@ set(MODULE_UI_SRCS
 
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
-  qSlicer${MODULE_NAME}ModuleWidgets
+  xeus
   )
 
 set(MODULE_RESOURCES
@@ -60,19 +63,38 @@ slicerMacroBuildLoadableModule(
   )
 
 #-----------------------------------------------------------------------------
+# Create kernel specification
+
+# Build tree
 configure_file(
   Resources/kernel.json.in
-  ${SlicerJupyter_BINARY_DIR}/slicer_kernel/kernel.json
+  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION}/kernel.json
   @ONLY
   )
+# Install tree
+configure_file(
+  Resources/kernel-install.json.in
+  ${SlicerJupyter_BINARY_DIR}/kernel.json
+  @ONLY
+  )
+install(
+  FILES ${SlicerJupyter_BINARY_DIR}/kernel.json
+  DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION} COMPONENT Runtime
+  )
+  
 foreach(res IN ITEMS 32 64)
+  # Build tree
   configure_file(
     Resources/Icons/Slicer-${res}x${res}.png
-    ${SlicerJupyter_BINARY_DIR}/slicer_kernel/logo-${res}x${res}.png
+    ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION}/logo-${res}x${res}.png
     COPYONLY
     )
+  # Install tree
+  install(
+    FILES Resources/Icons/Slicer-${res}x${res}.png
+    DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION} COMPONENT Runtime
+    )
 endforeach()
-
 
 #-----------------------------------------------------------------------------
 if(BUILD_TESTING)

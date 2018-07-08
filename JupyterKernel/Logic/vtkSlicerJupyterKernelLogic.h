@@ -55,6 +55,7 @@ protected:
   virtual void UpdateFromMRMLScene();
   virtual void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
   virtual void OnMRMLSceneNodeRemoved(vtkMRMLNode* node);
+
 private:
 
   vtkSlicerJupyterKernelLogic(const vtkSlicerJupyterKernelLogic&); // Not implemented

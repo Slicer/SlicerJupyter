@@ -51,7 +51,18 @@ public:
   virtual QIcon icon()const;
 
   virtual QStringList categories()const;
-  virtual QStringList dependencies() const;
+  virtual QStringList dependencies()const;
+
+  virtual void updateKernelSpec();
+
+  virtual bool installSlicerKernel(QString pythonScriptsFolder);
+  virtual bool startJupyterNotebook(QString pythonScriptsFolder);
+
+  virtual QString kernelFolderPath();
+
+public slots:
+
+  void startKernel(const QString& connectionFile);
 
 protected:
 

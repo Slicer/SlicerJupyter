@@ -28,6 +28,7 @@
 
 // STD includes
 #include <cassert>
+#include <fstream>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerJupyterKernelLogic);

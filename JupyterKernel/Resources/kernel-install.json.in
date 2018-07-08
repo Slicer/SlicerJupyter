@@ -1,0 +1,10 @@
+{
+    "display_name": "{slicer_application_name} {slicer_version_major}.{slicer_version_minor}",
+    "language" : "python",
+    "argv": [
+        "{slicer_launcher_executable}",
+        "--no-splash",
+        "--python-code",
+        "connection_file=r'{connection_file}'; print('Jupyter connection file: ['+connection_file+']'); slicer.modules.jupyterkernel.startKernel(connection_file);slicer.util.mainWindow().showMinimized()"
+    ]
+}
