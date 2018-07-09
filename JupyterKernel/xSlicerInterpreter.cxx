@@ -79,7 +79,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
       pub_data["text/plain"] = m_captured_stderr.join("").toStdString();
       }
 
-    publish_execution_result(execution_counter, std::move(pub_data), xjson());
+    publish_execution_result(execution_counter, std::move(pub_data), xjson::object());
 
     return result;
 }
@@ -168,19 +168,7 @@ xjson xSlicerInterpreter::is_complete_request_impl(const std::string& code)
 
 xjson xSlicerInterpreter::kernel_info_request_impl()
 {
-    QString kernel_name = QString("%1-%2.%3"). // example: slicer-4.9
-        arg(qSlicerApplication::application()->applicationName().toLower()).
-        arg(qSlicerApplication::application()->majorVersion()).
-        arg(qSlicerApplication::application()->minorVersion());
-
-    QString display_name = QString("%1 %2.%3"). // example: Slicer 4.9
-        arg(qSlicerApplication::application()->applicationName()).
-        arg(qSlicerApplication::application()->majorVersion()).
-        arg(qSlicerApplication::application()->minorVersion());
-
     xjson result;
-    result["language_info"]["kernelspec"]["name"] = kernel_name.toStdString();
-    result["language_info"]["kernelspec"]["display_name"] = display_name.toStdString();
     result["language_info"]["mimetype"] = "text/x-python";
     result["language_info"]["name"] = "python";
     result["language_info"]["nbconvert_exporter"] = "python";
