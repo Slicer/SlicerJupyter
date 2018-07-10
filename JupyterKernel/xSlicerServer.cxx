@@ -1,5 +1,8 @@
 #include "xSlicerServer.h"
 
+// Slicer includes
+#include <qSlicerApplication.h>
+
 // STL includes
 #include <thread>
 
@@ -30,6 +33,8 @@ void xSlicerServer::poll_slot()
     {
         stop_channels();
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        // Kernel shutdown requested
+        qSlicerApplication::application()->exit(0);
     }
 }
 
