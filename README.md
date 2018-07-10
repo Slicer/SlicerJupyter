@@ -16,6 +16,36 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 * Start Jupyter notebook
 * Select _Slicer 4.9_ kernel. Jupyter will open a new Slicer instance automatically when kernel start is requested; and this instance will be closed when kernel shutdown is requested.
+* Add `display()` at the end of a cell to display Slicer viewer content in the notebook.
+
+## Example
+
+Load a sample data and show an axial slice view:
+
+<pre>
+slicer.mrmlScene.Clear(False)
+import SampleData
+sampleDataLogic = SampleData.SampleDataLogic()
+volume = sampleDataLogic.downloadCTChest()
+slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
+display()
+</pre>
+
+Create a surface mesh from the image:
+
+<pre>
+parameters = {}
+parameters["InputVolume"] = volume.GetID()
+parameters["Threshold"] = 1520
+outModel = slicer.vtkMRMLModelNode()
+slicer.mrmlScene.AddNode( outModel )
+parameters["OutputGeometry"] = outModel.GetID()
+grayMaker = slicer.modules.grayscalemodelmaker
+slicer.cli.runSync(grayMaker, None, parameters)
+slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUp3DView)
+slicer.app.layoutManager().threeDWidget(0).threeDView().resetCamera()
+display()
+</pre>
 
 # For developers
 
