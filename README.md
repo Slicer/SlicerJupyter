@@ -36,7 +36,7 @@ Create a surface mesh from the image:
 <pre>
 parameters = {}
 parameters["InputVolume"] = volume.GetID()
-parameters["Threshold"] = 1520
+parameters["Threshold"] = 220
 outModel = slicer.vtkMRMLModelNode()
 slicer.mrmlScene.AddNode( outModel )
 parameters["OutputGeometry"] = outModel.GetID()
