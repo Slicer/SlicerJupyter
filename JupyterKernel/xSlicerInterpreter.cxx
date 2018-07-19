@@ -4,6 +4,8 @@
 
 #include <xeus/xguid.hpp>
 
+#include <ctkPythonConsole.h>
+
 #include <qMRMLSliceWidget.h>
 #include <qMRMLSliceView.h>
 #include <qMRMLThreeDWidget.h>
@@ -117,9 +119,20 @@ xjson xSlicerInterpreter::complete_request_impl(const std::string& code,
     std::cout << std::endl;
     xjson result;
     result["status"] = "ok";
-    result["matches"] = {"a.echo1"};
-    result["cursor_start"] = 2;
-    result["cursor_end"] = 6;
+    ctkPythonConsole* pythonConsole = qSlicerApplication::application()->pythonConsole();
+    QStringList matches;
+    int replacementCursorStart = cursor_pos;
+    int replacementCursorEnd = cursor_pos;
+    pythonConsole->autoComplete(code.c_str(), cursor_pos, matches, replacementCursorStart, replacementCursorEnd);
+    xjson matchesArray = xjson::array();
+    foreach(QString match, matches)
+    {
+      matchesArray.push_back(match.toLatin1().constData());
+    }
+    result["matches"] = matchesArray;
+    result["cursor_start"] = replacementCursorStart;
+    result["cursor_end"] = replacementCursorEnd;
+
     return result;
 }
 
