@@ -43,13 +43,13 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/jcfr/cryptopp-cmake.git"
+    "${EP_GIT_PROTOCOL}://github.com/noloader/cryptopp-cmake.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_cmake_GIT_TAG
-    7267eadf74a81f0424531bf39979f8667efd64f5
+    77b9d530e9715a19843524229c8c7a90128fb3ab
     QUIET
     )
 
