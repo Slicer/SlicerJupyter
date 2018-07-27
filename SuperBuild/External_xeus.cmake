@@ -69,15 +69,15 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     )
   set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
+  if(APPLE)
+     ExternalProject_Add_Step(${proj} fix_rpath
+       COMMAND install_name_tool -id ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.1.dylib ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.1.dylib
+       DEPENDEES install
+       )
+  endif()
+
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
-endif()
-
-if(APPLE)
-   ExternalProject_Add_Step(${proj} fix_rpath
-     COMMAND install_name_tool -id ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.1.dylib ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.1.dylib
-     DEPENDEES install
-     )
 endif()
 
 mark_as_superbuild(${proj}_DIR:PATH)

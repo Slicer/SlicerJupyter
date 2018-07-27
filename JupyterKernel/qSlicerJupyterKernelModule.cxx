@@ -136,7 +136,7 @@ void qSlicerJupyterKernelModule::setup()
   this->Superclass::setup();
   this->updateKernelSpec();
 }
-  
+
 //-----------------------------------------------------------------------------
 void qSlicerJupyterKernelModule::updateKernelSpec()
 {
@@ -180,9 +180,16 @@ void qSlicerJupyterKernelModule::updateKernelSpec()
     kernelJson.replace("{slicer_version_minor}", QString::number(app->minorVersion()));
     wasModified = true;
   }
+
   if (kernelJson.indexOf("{slicer_launcher_executable}") != -1)
   {
-    kernelJson.replace("{slicer_launcher_executable}", app->launcherExecutableFilePath());
+    QString realExecutable = app->launcherExecutableFilePath();
+    if (realExecutable.isEmpty())
+      {
+      realExecutable = app->applicationFilePath();
+      }
+
+    kernelJson.replace("{slicer_launcher_executable}", realExecutable);
     wasModified = true;
   }
 
