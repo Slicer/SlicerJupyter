@@ -23,6 +23,7 @@
 #include "qSlicerJupyterKernelModuleWidget.h"
 
 #include "qSlicerApplication.h"
+#include "qSlicerPythonManager.h"
 
 #include <QDebug>
 #include <QFile>
@@ -43,6 +44,42 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QProcess>
+
+// TODO move this code somewhere
+auto complete_code = R"(
+
+# TODO put everything in try block and return errors on side channel
+
+def complete(code, cursor_pos):
+    import sys
+    import distutils.spawn
+    sys.executable = distutils.spawn.find_executable('python-real') or distutils.spawn.find_executable('python')
+
+    import json
+    import jedi
+    import jedi.api.environment
+
+    # hack to work around: https://github.com/davidhalter/jedi/issues/1142
+    jedi.api.environment.get_default_environment = lambda: jedi.api.environment.SameEnvironment()
+
+    lines = code[:cursor_pos].splitlines() or [code]
+    line, column = len(lines), len(lines[-1].strip())
+
+    script = jedi.Interpreter(code, line=line, column=column, namespaces=[globals()])
+    completions = [x.complete for x in script.completions()]
+
+    d = json.dumps(
+            {
+            'matches': completions,
+            'cursor_start': cursor_pos,
+            'cursor_end': cursor_pos,
+            'metadata': {},
+            'status': 'ok'
+            })
+    return d
+
+slicer.util.py_complete_request = complete
+)";
 
 //-----------------------------------------------------------------------------
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
@@ -243,6 +280,11 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
     d->Kernel->start();
 
     d->Started = true;
+
+    // TODO init where?
+    // Initialize the slicer.util.py_complete
+    qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
+    pythonManager->executeString(QString::fromStdString(complete_code));
   }
 }
 
