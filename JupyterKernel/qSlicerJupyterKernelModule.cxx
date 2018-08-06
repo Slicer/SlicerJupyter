@@ -57,12 +57,14 @@
 // TODO move this code somewhere
 auto complete_code = R"(
 
+# TODO this should be done in Slicer core init
+sys.executable = distutils.spawn.find_executable('python-real') or distutils.spawn.find_executable('python')
+
 # TODO put everything in try block and return errors on side channel
 
 def complete(code, cursor_pos):
     import sys
     import distutils.spawn
-    sys.executable = distutils.spawn.find_executable('python-real') or distutils.spawn.find_executable('python')
 
     import json
     import jedi
