@@ -25,6 +25,15 @@
 #include "qSlicerApplication.h"
 #include "qSlicerPythonManager.h"
 
+// On Windows, pyerrors.h redefines snprintf to _snprintf
+// which causes error C2039: '_snprintf': is not a member of 'std'
+// while trying to compile std::snprintf in json.hpp (in nlohmann_json).
+// Until this is fixed in Python or made more robust in nlohman_json,
+// fix this here by undefining snprintf.
+#if defined(WIN32) && defined(snprintf)
+  #undef snprintf
+#endif
+
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
