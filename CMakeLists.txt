@@ -36,7 +36,12 @@ endif()
 #-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(JupyterKernel)
-## NEXT_MODULE
+
+#-----------------------------------------------------------------------------
+install(CODE "message(\"Installing python packages.\")")
+install(DIRECTORY "${python_packages_DIR}/"
+        DESTINATION ${Slicer_INSTALL_ROOT}${Slicer_BUNDLE_EXTENSIONS_LOCATION}
+        COMPONENT RuntimeLibraries)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)

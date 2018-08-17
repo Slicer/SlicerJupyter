@@ -36,6 +36,8 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(_no_binary "")
 
   # Install jedi and requirements
+  # note: --force-reinstall ensures the python dependency is installed within
+  #       this library's prefix for packaging.
   set(_install_jedi COMMAND ${CMAKE_COMMAND}
       -E env
         PYTHONNOUSERSITE=1
@@ -44,6 +46,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
         ${wrapper_script} ${PYTHON_EXECUTABLE} -m pip install
           jedi==${${CMAKE_PROJECT_NAME}_${proj}_VERSION} ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
+          --force-reinstall
     )
 
   ExternalProject_Add(${proj}
@@ -59,7 +62,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       ${${proj}_DEPENDENCIES}
     )
 
-  #ExternalProject_GenerateProjectDescription_Step(${proj})
+  ExternalProject_GenerateProjectDescription_Step(${proj})
 
   #-----------------------------------------------------------------------------
   # Launcher setting specific to build tree
