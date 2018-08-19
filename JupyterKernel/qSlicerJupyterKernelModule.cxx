@@ -57,14 +57,21 @@
 // TODO move this code somewhere
 auto complete_code = R"(
 
+# Create a placeholder for display() helper function to make it available for auto-completion
+# and specify documentation. This display method will not executed but the Slicer Jupyter kernel
+# will intercept the call and performs the necessary action.
+def display():
+  """Display view layout in a Jupyter notebook"""
+  pass
+
 # TODO this should be done in Slicer core init
+import sys
+import distutils.spawn
 sys.executable = distutils.spawn.find_executable('python-real') or distutils.spawn.find_executable('python')
 
 # TODO put everything in try block and return errors on side channel
 
 def complete(code, cursor_pos):
-    import sys
-    import distutils.spawn
 
     import json
     import jedi
