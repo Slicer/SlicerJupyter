@@ -26,8 +26,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    #CRYPTOPP_5_6_5
-    origin/master
+    # origin/master is changing (and CMake build breaking) too frequently, therefore we need to use specific git hash or tag instead
+    2ec9c9963c6ca58e8c764cc64b28fdb52eca28d7
     QUIET
     )
 
