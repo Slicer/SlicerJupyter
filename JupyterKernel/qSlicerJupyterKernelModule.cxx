@@ -64,7 +64,6 @@ def display():
   """Display view layout in a Jupyter notebook"""
   pass
 
-# TODO this should be done in Slicer core init
 import sys
 import distutils.spawn
 sys.executable = distutils.spawn.find_executable('python-real') or distutils.spawn.find_executable('python')
@@ -81,15 +80,17 @@ def complete(code, cursor_pos):
     jedi.api.environment.get_default_environment = lambda: jedi.api.environment.SameEnvironment()
 
     lines = code[:cursor_pos].splitlines() or [code]
-    line, column = len(lines), len(lines[-1].strip())
+    line, column = len(lines), len(lines[-1])
 
     script = jedi.Interpreter(code, line=line, column=column, namespaces=[globals()])
-    completions = [x.complete for x in script.completions()]
+    completions = script.completions()
+
+    cursor_start = cursor_pos - (len(completions[0].name_with_symbols) - len(completions[0].complete))
 
     d = json.dumps(
             {
-            'matches': completions,
-            'cursor_start': cursor_pos,
+            'matches': [x.name_with_symbols for x in completions],
+            'cursor_start': cursor_start,
             'cursor_end': cursor_pos,
             'metadata': {},
             'status': 'ok'
