@@ -7,21 +7,29 @@
 
 #include "qSlicerJupyterKernelModuleExport.h"
 
+// Qt includes
+#include <QList>
+#include <QSharedPointer>
+#include <QSocketNotifier>
+
 class xSlicerServer : public xeus::xserver_zmq
 {
 
 public:
+    using socket_notifier_ptr = QSharedPointer<QSocketNotifier>;
 
     xSlicerServer(zmq::context_t& context,
                  const xeus::xconfiguration& config);
 
-    virtual ~xSlicerServer() = default;
-
-    void poll_slot();
+    virtual ~xSlicerServer();
 
 protected:
 
     void start_impl(zmq::multipart_t& message) override;
+    void stop_impl() override;
+
+    socket_notifier_ptr make_socket_notifier(const zmq::socket_t& socket, const QString& name);
+    QList< socket_notifier_ptr > m_notifiers;
 };
 
 Q_SLICER_QTMODULES_JUPYTERKERNEL_EXPORT
