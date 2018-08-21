@@ -16,6 +16,10 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 * Start Jupyter notebook
 * Select _Slicer 4.9_ kernel. Jupyter will open a new Slicer instance automatically when kernel start is requested; and this instance will be closed when kernel shutdown is requested.
+
+![Select Slicer kernel](doc/StartKernel.png)
+
+* While the kernel is starting, "Kernel starting, please wait.." message is displayed. After a few ten seconds Slicer kernel should start.
 * Add `display()` at the end of a cell to display Slicer viewer content in the notebook.
 
 ## Example
@@ -46,6 +50,10 @@ slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUp3
 slicer.app.layoutManager().threeDWidget(0).threeDView().resetCamera()
 display()
 </pre>
+
+# Known limitations
+
+- Inspect (Shift-Tab) is not implemented yet
 
 # For developers
 
