@@ -36,6 +36,9 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QLabel>
+#include <QMainWindow>
+#include <QStatusBar>
 #include <QTextStream>
 
 // XEUS includes
@@ -116,6 +119,7 @@ public:
   bool Started;
   xeus::xkernel * Kernel;
   xeus::xconfiguration Config;
+  QLabel* StatusLabel;
 
 protected:
   qSlicerJupyterKernelModule* const q_ptr;
@@ -130,6 +134,7 @@ qSlicerJupyterKernelModulePrivate::qSlicerJupyterKernelModulePrivate(qSlicerJupy
 : q_ptr(&object)
 , Started(false)
 , Kernel(NULL)
+, StatusLabel(NULL)
 {
 }
 
@@ -304,6 +309,21 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
     // Initialize the slicer.util.py_complete
     qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
     pythonManager->executeString(QString::fromStdString(complete_code));
+
+    QStatusBar* statusBar = NULL;
+    if (qSlicerApplication::application()->mainWindow())
+    {
+      statusBar = qSlicerApplication::application()->mainWindow()->statusBar();
+    }
+    if (statusBar)
+    {
+      if (!d->StatusLabel)
+      {
+        d->StatusLabel = new QLabel;
+        statusBar->insertPermanentWidget(0, d->StatusLabel);
+      }
+      d->StatusLabel->setText(tr("<b><font color=\"red\">Application is managed by Jupyter</font></b>"));
+    }
   }
 }
 
