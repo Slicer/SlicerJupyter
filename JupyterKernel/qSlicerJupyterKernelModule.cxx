@@ -100,7 +100,37 @@ def complete(code, cursor_pos):
             })
     return d
 
+def inspect(code, cursor_pos, detail_level):
+
+    import json
+    import jedi
+    import jedi.api.environment
+
+    # hack to work around: https://github.com/davidhalter/jedi/issues/1142
+    jedi.api.environment.get_default_environment = lambda: jedi.api.environment.SameEnvironment()
+
+    lines = code[:cursor_pos].splitlines() or [code]
+    line, column = len(lines), len(lines[-1])
+
+    script = jedi.Interpreter(code, line=line, column=column, namespaces=[globals()])
+    definitions = script.goto_definitions()
+    found = False
+    doc = ''
+    if definitions:
+        doc = definitions[0].docstring()
+        found = True
+
+    d = json.dumps(
+            {
+            'found': found,
+            'data': {'text/plain': doc},
+            'metadata': {},
+            'status': 'ok'
+            })
+    return d
+
 slicer.util.py_complete_request = complete
+slicer.util.py_inspect_request = inspect
 )";
 
 //-----------------------------------------------------------------------------

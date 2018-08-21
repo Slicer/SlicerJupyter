@@ -48,6 +48,8 @@ private:
 
     QStringList m_captured_stdout;
     QStringList m_captured_stderr;
+
+    bool m_print_debug_output = false;
 };
 
 #endif
