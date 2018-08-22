@@ -63,6 +63,7 @@ public:
 public slots:
 
   void startKernel(const QString& connectionFile);
+  void stopKernel();
 
 protected:
 

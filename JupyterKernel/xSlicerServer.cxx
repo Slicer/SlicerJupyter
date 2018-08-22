@@ -2,6 +2,8 @@
 
 // Slicer includes
 #include <qSlicerApplication.h>
+#include <qSlicerModuleManager.h>
+#include "qSlicerJupyterKernelModule.h"
 
 // STL includes
 #include <thread>
@@ -66,6 +68,13 @@ void xSlicerServer::stop_impl()
   this->xserver_zmq::stop_impl();
   stop_channels();
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  // Notify JupyterKernel module about kernel stop.
+  qSlicerJupyterKernelModule* kernelModule = qobject_cast<qSlicerJupyterKernelModule*>(qSlicerCoreApplication::application()->moduleManager()->module("JupyterKernel"));
+  if (kernelModule)
+  {
+    kernelModule->stopKernel();
+  }
 }
 
 std::unique_ptr<xeus::xserver> make_xSlicerServer(zmq::context_t& context,

@@ -358,6 +358,18 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerJupyterKernelModule::stopKernel()
+{
+  Q_D(qSlicerJupyterKernelModule);
+  // Kernel shutdown requested
+  if (d->StatusLabel)
+  {
+    d->StatusLabel->setText("");
+  }
+  qSlicerApplication::application()->exit(0);
+}
+
+//-----------------------------------------------------------------------------
 bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder)
 {
   Q_D(qSlicerJupyterKernelModule);
