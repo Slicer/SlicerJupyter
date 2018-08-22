@@ -38,7 +38,7 @@ xSlicerServer::make_socket_notifier(const zmq::socket_t& socket, const QString& 
         new QSocketNotifier(socket.getsockopt<quintptr>(ZMQ_FD), QSocketNotifier::Read));
 
   QObject::connect(socket_notifier.data(), &QSocketNotifier::activated, [=](int){
-    poll(10);
+    poll(0);
     });
 
   return socket_notifier;
