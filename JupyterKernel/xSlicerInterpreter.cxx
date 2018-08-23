@@ -68,13 +68,15 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     QVariant executeResult = pythonManager->executeString(qscode.left(qscode.length() - displayCommand.length()));
     pub_data["image/png"] = execute_display_command();
   }
-  else if (qscode.endsWith("__kernel_debug_enable()"))
+  else if (qscode.endsWith(QString("__kernel_debug_enable()")))
   {
     m_print_debug_output = true;
+    pub_data["text/plain"] = "Kernel debug info print enabled.";
   }
-  else if (qscode.endsWith("__kernel_debug_disable()"))
+  else if (qscode.endsWith(QString("__kernel_debug_disable()")))
   {
     m_print_debug_output = false;
+    pub_data["text/plain"] = "Kernel debug info print disabled.";
   }
   else
   {

@@ -57,6 +57,8 @@ display()
 
 # For developers
 
+## Build instructions
+
 * Build the extension against the newly built Slicer with Qt5 and VTK9 enabled.
 
 * Install Jupyter
@@ -79,3 +81,10 @@ jupyter-kernelspec install /tmp/SlicerJupyter-build/inner-build/share/Slicer-4.9
 workon jupyter_env
 python -m jupyter notebook
 ```
+
+## Special commands
+
+These commands must be the last commands in a cell.
+
+- `__kernel_debug_enable()`: enable detailed logging of all incoming Jupyter requests
+- `__kernel_debug_disable()`: enable detailed logging of all incoming Jupyter requests
