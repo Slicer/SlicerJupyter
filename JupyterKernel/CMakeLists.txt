@@ -73,12 +73,12 @@ configure_file(
   )
 # Install tree
 configure_file(
-  Resources/kernel-install.json.in
-  ${SlicerJupyter_BINARY_DIR}/kernel.json
+  Resources/kernel-template.json.in
+  ${SlicerJupyter_BINARY_DIR}/kernel-template.json
   @ONLY
   )
 install(
-  FILES ${SlicerJupyter_BINARY_DIR}/kernel.json
+  FILES ${SlicerJupyter_BINARY_DIR}/kernel-template.json
   DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION} COMPONENT Runtime
   )
   

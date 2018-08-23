@@ -225,7 +225,6 @@ QStringList qSlicerJupyterKernelModule::dependencies() const
 void qSlicerJupyterKernelModule::setup()
 {
   this->Superclass::setup();
-  this->updateKernelSpec();
 }
 
 //-----------------------------------------------------------------------------
@@ -238,40 +237,34 @@ void qSlicerJupyterKernelModule::updateKernelSpec()
     return;
   }
 
-  QString kernelJsonPath = kernelFolder + "/kernel.json";
-  QFile file(kernelJsonPath);
-  if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
+  QString kernelJsonTemplatePath = kernelFolder + "/kernel-template.json";
+  QFile templateFile(kernelJsonTemplatePath);
+  if (!templateFile.open(QIODevice::ReadOnly | QIODevice::Text))
   {
-    qWarning() << Q_FUNC_INFO << " failed: cannot read file " << kernelJsonPath;
+    // no template file (for example, in install tree), no need to update
     return;
   }
-  QTextStream in(&file);
+  QTextStream in(&templateFile);
   QString kernelJson = in.readAll();
-
-  bool wasModified = false;
-
+  templateFile.close();
+  
   qSlicerApplication* app = qSlicerApplication::application();
   if (kernelJson.indexOf("{slicer_application_name}") != -1)
   {
     kernelJson.replace("{slicer_application_name}", app->applicationName());
-    wasModified = true;
   }
   if (kernelJson.indexOf("{slicer_version_full}") != -1)
   {
     kernelJson.replace("{slicer_version_full}", app->applicationVersion());
-    wasModified = true;
   }
   if (kernelJson.indexOf("{slicer_version_major}") != -1)
   {
     kernelJson.replace("{slicer_version_major}", QString::number(app->majorVersion()));
-    wasModified = true;
   }
   if (kernelJson.indexOf("{slicer_version_minor}") != -1)
   {
     kernelJson.replace("{slicer_version_minor}", QString::number(app->minorVersion()));
-    wasModified = true;
   }
-
   if (kernelJson.indexOf("{slicer_launcher_executable}") != -1)
   {
     QString realExecutable = app->launcherExecutableFilePath();
@@ -281,20 +274,28 @@ void qSlicerJupyterKernelModule::updateKernelSpec()
       }
 
     kernelJson.replace("{slicer_launcher_executable}", realExecutable);
-    wasModified = true;
   }
 
-  if (!wasModified)
+  // Compare to existing kernel
+
+  QString kernelJsonPath = kernelFolder + "/kernel.json";
+  QFile kernelFile(kernelJsonPath);
+  if (!kernelFile.open(QIODevice::ReadWrite | QIODevice::Text))
   {
-    // already up-to-date
+    qWarning() << Q_FUNC_INFO << " failed: cannot write file " << kernelJsonPath;
     return;
   }
+  QTextStream existingKernelContentStream(&templateFile);
+  QString existingKernelJson = existingKernelContentStream.readAll();
+  if (existingKernelJson != kernelJson)
+  {
+    // Kernel modified
+    kernelFile.seek(0);
+    kernelFile.write(kernelJson.toUtf8());
+    kernelFile.resize(kernelFile.pos()); // remove any potential extra content
+  }
 
-  file.seek(0);
-  file.write(kernelJson.toUtf8());
-  file.resize(file.pos()); // remove any potential extra content
-
-  file.close();
+  kernelFile.close();
 }
 
 //-----------------------------------------------------------------------------
@@ -381,6 +382,11 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
     qWarning() << Q_FUNC_INFO << " failed: invalid logic";
     return false;
   }
+
+  // There can be multiple Slicer installations of the same version that all refer to the same extensions folder.
+  // Therefore we need to generate the kernel.json file from kernel-template.json file with information
+  // specific to the current Slicer instance.
+  this->updateKernelSpec();
 
   QString kernelspecExecutable = pythonScriptsFolder + "/" + "jupyter-kernelspec";
   QStringList args;
