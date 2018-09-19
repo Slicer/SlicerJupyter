@@ -18,15 +18,29 @@
 // Qt includes
 #include <QDebug>
 #include <QSocketNotifier>
+#ifdef JUPYTER_POLL_USING_TIMER
+#include <QTimer>
+#endif
 
 xSlicerServer::xSlicerServer(zmq::context_t& context,
                            const xeus::xconfiguration& c)
     : xserver_zmq(context, c)
 {
+#ifdef JUPYTER_POLL_USING_TIMER
+  // 50ms interval is sort enough so that users will not notice significant latency
+  // yet it is long enough to minimize CPU load caused by polling.
+  m_pollTimer = new QTimer();
+  m_pollTimer->setInterval(50);
+  QObject::connect(m_pollTimer, &QTimer::timeout, [=]() { poll(0); });
+#endif
 }
 
 xSlicerServer::~xSlicerServer()
 {
+#ifdef JUPYTER_POLL_USING_TIMER
+  m_pollTimer->stop();
+  delete m_pollTimer;
+#endif
 }
 
 xSlicerServer::socket_notifier_ptr
@@ -51,13 +65,17 @@ void xSlicerServer::start_impl(zmq::multipart_t& message)
     start_publisher_thread();
     start_heartbeat_thread();
 
+    m_request_stop = false;
+
+#ifdef JUPYTER_POLL_USING_TIMER
+    m_pollTimer->start();
+#else
     m_notifiers.append(make_socket_notifier(m_shell, "shell"));
     m_notifiers.append(make_socket_notifier(m_controller, "controller"));
     m_notifiers.append(make_socket_notifier(m_stdin, "stdin"));
     m_notifiers.append(make_socket_notifier(m_controller_pub, "controller_pub"));
     m_notifiers.append(make_socket_notifier(m_publisher_pub, "publisher_pub"));
-
-    m_request_stop = false;
+#endif
 
     publish(message);
 }
@@ -66,6 +84,9 @@ void xSlicerServer::stop_impl()
 {
   qDebug() << "Stopping Jupyter kernel server";
   this->xserver_zmq::stop_impl();
+#ifdef JUPYTER_POLL_USING_TIMER
+  m_pollTimer->stop();
+#endif
   stop_channels();
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
