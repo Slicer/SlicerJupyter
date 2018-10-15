@@ -186,7 +186,7 @@ qSlicerJupyterKernelModule::~qSlicerJupyterKernelModule()
 //-----------------------------------------------------------------------------
 QString qSlicerJupyterKernelModule::helpText() const
 {
-  return "This extension provides a Jupyter kernel, which allows running Jupyter notebooks in 3D Slicer.";
+  return "This extension provides a Jupyter kernel, which allows running Jupyter notebooks in 3D Slicer. See <a href=\"https://github.com/Slicer/SlicerJupyter\">extension documentation</a> for more details.";
 }
 
 //-----------------------------------------------------------------------------
