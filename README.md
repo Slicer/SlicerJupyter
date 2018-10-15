@@ -9,13 +9,17 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 * Install Python and Jupyter notebook
 * Install 3D Slicer and SlicerJupyter extension, restart Slicer
-* Switch to JupyterKernel module, select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located. On Windows by default it is a location such as _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_.
-* Click _Install Slicer kernel in Jupyter_.
+* Switch to JupyterKernel module, select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located. On Windows by default it is a location such as _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. If you use virtual environment, specify Script folder of your virtual environment.
+* Click _Install Slicer kernel in Jupyter_ to create kernel and automatically install it.
+
+Note: If virtual environments or not Python.org distribution (e.g., Anaconda) is used then kernel might need be installed manually using this command (replace <kernelfolder> with the path shown in Slicer in JupyterKernel module as "Slicer kernel folder"):
+
+    jupyter-kernelspec install <kernelfolder>
 
 ## Using Slicer from a notebook
 
-* Start Jupyter notebook
-* Select _Slicer 4.9_ kernel. Jupyter will open a new Slicer instance automatically when kernel start is requested; and this instance will be closed when kernel shutdown is requested.
+* Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
+* Create a new notebook, selecting _Slicer 4.x_ kernel (for example, _Slicer 4.9_). Jupyter will open a new Slicer instance automatically when kernel start is requested; and this instance will be closed when kernel shutdown is requested.
 
 ![Select Slicer kernel](doc/StartKernel.png)
 
