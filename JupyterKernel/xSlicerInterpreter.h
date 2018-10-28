@@ -31,6 +31,10 @@ private:
 
     std::string execute_display_command();
 
+    void show_view_controllers(bool show);
+
+    void force_render();
+
     xjson complete_request_impl(const std::string& code,
                                 int cursor_pos) override;
 

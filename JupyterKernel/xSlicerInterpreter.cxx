@@ -4,8 +4,16 @@
 
 #include <xeus/xguid.hpp>
 
+#include <qMRMLPlotView.h>
+#include <qMRMLPlotViewControllerWidget.h>
+#include <qMRMLPlotWidget.h>
 #include <qMRMLSliceWidget.h>
+#include <qMRMLSliceControllerWidget.h>
 #include <qMRMLSliceView.h>
+#include <qMRMLTableView.h>
+#include <qMRMLTableViewControllerWidget.h>
+#include <qMRMLTableWidget.h>
+#include <qMRMLThreeDViewControllerWidget.h>
 #include <qMRMLThreeDWidget.h>
 #include <qMRMLThreeDView.h>
 
@@ -17,6 +25,14 @@
 #include <QObject>
 
 #include <PythonQt.h>
+
+// Until very recent Slicer versions, table and plot view controllers
+// are not accessible, therefore we disable access to them.
+// The only impact is that the view controller bar is visible
+// in screen captures.
+// TODO: Enable USE_TABLE_PLOT_CONTROLLER when it becomes available
+// in all supported Slicer versions.
+#undef USE_TABLE_PLOT_CONTROLLER
 
 void xSlicerInterpreter::configure_impl()
 {
@@ -63,7 +79,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
   xjson pub_data;
   QString qscode = QString::fromUtf8(code.c_str());
   QString displayCommand = "display()";
-  if (qscode.endsWith(displayCommand))
+  if (qscode.trimmed().endsWith(displayCommand))
   {
     QVariant executeResult = pythonManager->executeString(qscode.left(qscode.length() - displayCommand.length()));
     pub_data["image/png"] = execute_display_command();
@@ -97,10 +113,31 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
   return result;
 }
 
-std::string xSlicerInterpreter::execute_display_command()
+void xSlicerInterpreter::show_view_controllers(bool show)
 {
-  // Make sure display updates are completed
-  qSlicerApplication::application()->processEvents();
+  qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
+  for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
+  {
+    layoutManager->threeDWidget(viewIndex)->threeDController()->setVisible(show);
+  }
+  foreach(QString sliceViewName, layoutManager->sliceViewNames())
+  {
+    layoutManager->sliceWidget(sliceViewName)->sliceController()->setVisible(show);
+  }
+#ifdef USE_TABLE_PLOT_CONTROLLER
+  for (int viewIndex = 0; viewIndex < layoutManager->tableViewCount(); viewIndex++)
+  {
+    layoutManager->tableWidget(viewIndex)->tableController()->setVisible(show);
+  }
+  for (int viewIndex = 0; viewIndex < layoutManager->plotViewCount(); viewIndex++)
+  {
+    layoutManager->plotWidget(viewIndex)->plotController()->setVisible(show);
+  }
+#endif
+}
+
+void xSlicerInterpreter::force_render()
+{
   qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
   for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
   {
@@ -110,14 +147,40 @@ std::string xSlicerInterpreter::execute_display_command()
   {
     layoutManager->sliceWidget(sliceViewName)->sliceView()->forceRender();
   }
+#ifdef USE_TABLE_PLOT_CONTROLLER
+  // TODO: the following repaints might not be necessary, but added here
+  // because similar forced paints are needed for slice and 3D views.
+  // Also, calling repaint() method may not be the appropriate way of
+  // forcing re-rendering.
+  for (int viewIndex = 0; viewIndex < layoutManager->tableViewCount(); viewIndex++)
+  {
+    layoutManager->tableWidget(viewIndex)->tableView()->repaint();
+  }
+  for (int viewIndex = 0; viewIndex < layoutManager->plotViewCount(); viewIndex++)
+  {
+    layoutManager->plotWidget(viewIndex)->plotView()->repaint();
+  }
+#endif
+}
 
-  // base64 encoding
+std::string xSlicerInterpreter::execute_display_command()
+{
+  show_view_controllers(false);
+
+  // Make sure display updates are completed
+  qSlicerApplication::application()->processEvents();
+  force_render();
+
+  qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
   QPixmap screenshot = layoutManager->viewport()->grab();
   QByteArray bArray;
   QBuffer buffer(&bArray);
   buffer.open(QIODevice::WriteOnly);
   screenshot.save(&buffer, "PNG");
   QString base64 = QString::fromLatin1(bArray.toBase64().data());
+
+  show_view_controllers(true);
+
   return base64.toStdString();
 }
 
