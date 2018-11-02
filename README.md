@@ -5,12 +5,23 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 # Usage
 
-## Setup
+## Option 1. Run using Binder
+
+No installation or setup is needed, just click the link below and start using Slicer via Jupyter notebook in your web browser.
+
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/slicer/SlicerNotebooks/master)
+
+Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extension on their cloud servers. Binder is a free service and server resources are quite limited. Also, there is no interactive access to the graphical user interface. Therefore, this option is only recommended for testing, demos, or simple computations or visualizations.
+
+## Option 2. Run Slicer and Jupyter on your own computer
+
+### Setup
 
 * Install Python and Jupyter notebook
 * Install 3D Slicer and SlicerJupyter extension, restart Slicer
 * Switch to JupyterKernel module, select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located. On Windows by default it is a location such as _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. If you use virtual environment, specify Script folder of your virtual environment.
 * Click _Install Slicer kernel in Jupyter_ to create kernel and automatically install it.
+* Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
 
 Note: If virtual environments or not Python.org distribution (e.g., Anaconda) is used then kernel might need be installed manually using this command (replace <kernelfolder> with the path shown in Slicer in JupyterKernel module as "Slicer kernel folder"):
 
@@ -18,7 +29,6 @@ Note: If virtual environments or not Python.org distribution (e.g., Anaconda) is
 
 ## Using Slicer from a notebook
 
-* Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
 * Create a new notebook, selecting _Slicer 4.x_ kernel (for example, _Slicer 4.9_). Jupyter will open a new Slicer instance automatically when kernel start is requested; and this instance will be closed when kernel shutdown is requested.
 
 ![Select Slicer kernel](doc/StartKernel.png)
