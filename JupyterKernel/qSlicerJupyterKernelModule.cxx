@@ -228,21 +228,26 @@ void qSlicerJupyterKernelModule::setup()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerJupyterKernelModule::updateKernelSpec()
+bool qSlicerJupyterKernelModule::updateKernelSpec()
 {
   QString kernelFolder = this->kernelFolderPath();
   if (kernelFolder.isEmpty())
   {
     qWarning() << Q_FUNC_INFO << " failed: invalid kernel folder path";
-    return;
+    return false;
   }
 
   QString kernelJsonTemplatePath = kernelFolder + "/kernel-template.json";
   QFile templateFile(kernelJsonTemplatePath);
+  if (!templateFile.exists())
+  {
+    qWarning() << Q_FUNC_INFO << " kernel template file does not exist: " << kernelJsonTemplatePath;
+    return false;
+  }
   if (!templateFile.open(QIODevice::ReadOnly | QIODevice::Text))
   {
-    // no template file (for example, in install tree), no need to update
-    return;
+    qWarning() << Q_FUNC_INFO << " failed to open kernel template file: " << kernelJsonTemplatePath;
+    return false;
   }
   QTextStream in(&templateFile);
   QString kernelJson = in.readAll();
@@ -283,7 +288,7 @@ void qSlicerJupyterKernelModule::updateKernelSpec()
   if (!kernelFile.open(QIODevice::ReadWrite | QIODevice::Text))
   {
     qWarning() << Q_FUNC_INFO << " failed: cannot write file " << kernelJsonPath;
-    return;
+    return false;
   }
   QTextStream existingKernelContentStream(&templateFile);
   QString existingKernelJson = existingKernelContentStream.readAll();
@@ -296,6 +301,7 @@ void qSlicerJupyterKernelModule::updateKernelSpec()
   }
 
   kernelFile.close();
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -386,11 +392,16 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
   // There can be multiple Slicer installations of the same version that all refer to the same extensions folder.
   // Therefore we need to generate the kernel.json file from kernel-template.json file with information
   // specific to the current Slicer instance.
-  this->updateKernelSpec();
+  if (!this->updateKernelSpec())
+  {
+    qWarning() << Q_FUNC_INFO << " failed: error creating/updating kernel.json file";
+    return false;
+  }
 
   QString kernelspecExecutable = pythonScriptsFolder + "/" + "jupyter-kernelspec";
   QStringList args;
   args << "install" << this->kernelFolderPath() << "--replace" << "--user";
+  qDebug() << Q_FUNC_INFO << ": launching " << kernelspecExecutable << " " << args.join(" ");
 
   QProcess kernelSpecProcess;
   kernelSpecProcess.setProcessEnvironment(app->startupEnvironment());
@@ -398,12 +409,6 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
   kernelSpecProcess.setArguments(args);
   kernelSpecProcess.start();
   bool finished = kernelSpecProcess.waitForFinished();
-  if (!finished)
-  {
-    qWarning() << Q_FUNC_INFO << " failed: time out while launching process " << kernelspecExecutable;
-    return false;
-  }
-
   QString output = QString(kernelSpecProcess.readAllStandardOutput());
   QString errorOutput = QString(kernelSpecProcess.readAllStandardError());
   if (!output.isEmpty())
@@ -414,9 +419,19 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
   {
     qWarning() << "Kernelspec install error output: " << errorOutput;
   }
-
-  bool success = (kernelSpecProcess.exitCode() == 0);
-  return success;
+  if (!finished)
+  {
+    qWarning() << Q_FUNC_INFO << " failed: error launching process " << kernelspecExecutable
+      << " (code = " << kernelSpecProcess.error() << ")";
+    return false;
+  }
+  if (kernelSpecProcess.exitCode() != 0)
+  {
+    qWarning() << Q_FUNC_INFO << " failed: process " << kernelspecExecutable
+      << " returned with exit code " << kernelSpecProcess.exitCode();
+    return false;
+  }
+  return true;
 }
 
 //-----------------------------------------------------------------------------

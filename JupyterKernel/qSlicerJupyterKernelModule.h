@@ -53,7 +53,7 @@ public:
   virtual QStringList categories()const;
   virtual QStringList dependencies()const;
 
-  Q_INVOKABLE virtual void updateKernelSpec();
+  Q_INVOKABLE virtual bool updateKernelSpec();
 
   Q_INVOKABLE virtual bool installSlicerKernel(QString pythonScriptsFolder);
   Q_INVOKABLE virtual bool startJupyterNotebook(QString pythonScriptsFolder);
