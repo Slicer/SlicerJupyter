@@ -143,6 +143,9 @@ Q_EXPORT_PLUGIN2(qSlicerJupyterKernelModule, qSlicerJupyterKernelModule);
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerJupyterKernelModulePrivate
 {
+protected:
+  qSlicerJupyterKernelModule * const q_ptr;
+
 public:
   qSlicerJupyterKernelModulePrivate(qSlicerJupyterKernelModule& object);
 
@@ -150,9 +153,6 @@ public:
   xeus::xkernel * Kernel;
   xeus::xconfiguration Config;
   QLabel* StatusLabel;
-
-protected:
-  qSlicerJupyterKernelModule* const q_ptr;
 
 };
 
