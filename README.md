@@ -21,11 +21,12 @@ Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extensio
   * You can choose any Python version (2.x or 3.x.) and any bitness (32-bit or 64-bit)
   * Adding Python to your PATH environment variable or registering as default Python is not required.
 * Install [3D Slicer](https://download.slicer.org/) and SlicerJupyter extension, restart Slicer
-* Switch to JupyterKernel module, select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located.
+* Switch to JupyterKernel module in Slicer
+* Select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located.
   * On Windows, by default it is a location such as _C:/Users/(username)/Anaconda3/Scripts_ or _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. If you use virtual environment, specify Script folder of your virtual environment.
-* Click _Install Slicer kernel in Jupyter_ to create kernel and automatically install it.
+* Create and install kernel by clicking _Install Slicer kernel in Jupyter_.
   * If you use Anaconda, then kernel installation may fail with the message _fatal error C1083: Cannot open include file: 'sys/un.h' ... ImportError: DLL load failed: The specified module could not be found._ It is due to [this issue](https://github.com/zeromq/pyzmq/issues/852) and a fix is to reinstall ZeroMQ: open a command prompt in your Scripts folder, type `pip uninstall pyzmq` (answer _Yes_ if asked) then type `pip install pyzmq`.
-  * If automatic installation of the kernel fails for any reason then kernel can be installed manually using this command (replace <kernelfolder> with the path shown in Slicer, in JupyterKernel module in "Slicer kernel folder" field): `jupyter-kernelspec install <kernelfolder>`  
+  * If automatic installation of the kernel fails for any reason, then kernel can be installed manually using this command: `jupyter-kernelspec install <kernelfolder>` (replace <kernelfolder> with the path that is shown in "Slicer kernel folder" field in JupyterKernel module in Slicer)
 * Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
 
 ## Using Slicer from a notebook
