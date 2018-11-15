@@ -40,6 +40,10 @@ Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extensio
 * Hit `Tab` key for auto-complete
 * Hit `Shift`+`Tab` for showing documentation for a method (hit multiple times to show more details). Note: method name must be complete (you can use `Tab` key to complete the name) and the cursor must be inside the name or right after it (not in the parentheses). For example, type `slicer.util.getNode` and hit `Shift`+`Tab`.
 
+![Hit Tab key to auto-complete](doc/AutoComplete.png)
+
+![Hit Shift-Tab key to inspect](doc/Inspect.png)
+
 ## Example
 
 Load a sample data and show an axial slice view:
