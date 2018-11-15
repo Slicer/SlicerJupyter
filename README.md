@@ -37,6 +37,8 @@ Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extensio
 
 * While the kernel is starting, "Kernel starting, please wait.." message is displayed. After a few ten seconds Slicer kernel should start.
 * Add `display()` at the end of a cell to display Slicer viewer content in the notebook.
+* Hit `Tab` key for auto-complete
+* Hit `Shift`+`Tab` for showing documentation for a method (hit multiple times to show more details). Note: method name must be complete (you can use `Tab` key to complete the name) and the cursor must be inside the name or right after it (not in the parentheses). For example, type `slicer.util.getNode` and hit `Shift`+`Tab`.
 
 ## Example
 
@@ -67,9 +69,7 @@ slicer.app.layoutManager().threeDWidget(0).threeDView().resetCamera()
 display()
 </pre>
 
-# Known limitations
 
-- Inspect (Shift-Tab) is not implemented yet
 
 # For developers
 
