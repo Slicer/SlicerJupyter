@@ -46,7 +46,9 @@ Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extensio
 
 ## Example
 
-Load a sample data and show an axial slice view:
+You can get started by looking at [example Slicer notebooks here](https://github.com/Slicer/SlicerNotebooks) or looking at sample scripts below.
+
+Load data and show an axial slice view:
 
 <pre>
 slicer.mrmlScene.Clear(False)
