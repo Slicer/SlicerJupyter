@@ -63,12 +63,12 @@ slicerMacroBuildLoadableModule(
   )
 
 #-----------------------------------------------------------------------------
-# Create kernel specification
+# Create kernel specification template
 
 # Build tree
 configure_file(
-  Resources/kernel.json.in
-  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION}/kernel.json
+  Resources/kernel-template.json.in
+  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION}/kernel-template.json
   @ONLY
   )
 # Install tree
