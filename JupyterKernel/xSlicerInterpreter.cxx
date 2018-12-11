@@ -229,19 +229,41 @@ xjson xSlicerInterpreter::inspect_request_impl(const std::string& code,
   qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
   PythonQtObjectPtr context = pythonManager->mainContext();
 
-  QVariantList args;
-  args.push_back(QString::fromStdString(code));
-  args.push_back(cursor_pos);
-  args.push_back(detail_level);
-  QVariant executeResult = context.call("slicer.util.py_inspect_request", args);
+  QVariant executeResult;
 
-  if (m_print_debug_output)
+  // Get token at cursor (if inside parentheses after method name, it returns the method name)
+  std::string token;
   {
-    std::cout << "result: " << std::endl << executeResult.toString().toStdString() << std::endl;
+    QVariantList args;
+    args.push_back(QString::fromStdString(code));
+    args.push_back(cursor_pos);
+    executeResult = context.call("slicer.util.py_token_at_cursor", args);
+    token = executeResult.toString().toStdString();
+    if (m_print_debug_output)
+    {
+      std::cout << "slicer.util.py_token_at_cursor result: " << std::endl << executeResult.toString().toStdString() << std::endl;
+    }
+    // TODO error check?
   }
 
-  // TODO error check?
-  xjson result = xjson::parse(executeResult.toString().toStdString());
+  // Get documentation
+  std::string documentation;
+  {
+    QVariantList args;
+    args.push_back(QString::fromStdString(token));
+    args.push_back(token.size());
+    args.push_back(detail_level);
+    executeResult = context.call("slicer.util.py_inspect_request", args);
+    documentation = executeResult.toString().toStdString();
+    if (m_print_debug_output)
+    {
+      std::cout << "slicer.util.py_inspect_request result: " << std::endl << executeResult.toString().toStdString() << std::endl;
+    }
+    // TODO error check?
+  }
+
+  xjson result = xjson::parse(documentation);
+
   return result;
 }
 

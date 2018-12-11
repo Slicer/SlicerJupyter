@@ -100,6 +100,80 @@ def complete(code, cursor_pos):
             })
     return d
 
+
+# Code from IPython to make inspection work inside parentheses after method name
+
+from collections import namedtuple
+from io import StringIO
+from keyword import iskeyword
+import tokenize
+Token = namedtuple('Token', ['token', 'text', 'start', 'end', 'line'])
+
+def generate_tokens(readline):
+    try:
+        for token in tokenize.generate_tokens(readline):
+            yield token
+    except tokenize.TokenError:
+        # catch EOF error
+        return
+
+def token_at_cursor(cell, cursor_pos=0):
+    names = []
+    tokens = []
+    call_names = []
+
+    offsets = {1: 0} # lines start at 1
+    for tup in generate_tokens(StringIO(cell).readline):
+
+        tok = Token(*tup)
+
+        # token, text, start, end, line = tup
+        start_line, start_col = tok.start
+        end_line, end_col = tok.end
+        if end_line + 1 not in offsets:
+            # keep track of offsets for each line
+            lines = tok.line.splitlines(True)
+            for lineno, line in enumerate(lines, start_line + 1):
+                if lineno not in offsets:
+                    offsets[lineno] = offsets[lineno-1] + len(line)
+
+        offset = offsets[start_line]
+        # allow '|foo' to find 'foo' at the beginning of a line
+        boundary = cursor_pos + 1 if start_col == 0 else cursor_pos
+        if offset + start_col >= boundary:
+            # current token starts after the cursor,
+            # don't consume it
+            break
+
+        if tok.token == tokenize.NAME and not iskeyword(tok.text):
+            if names and tokens and tokens[-1].token == tokenize.OP and tokens[-1].text == '.':
+                names[-1] = '%s.%s' % (names[-1], tok.text)
+            else:
+                names.append(tok.text)
+        elif tok.token == tokenize.OP:
+            if tok.text == '=' and names:
+                # don't inspect the lhs of an assignment
+                names.pop(-1)
+            if tok.text == '(' and names:
+                # if we are inside a function call, inspect the function
+                call_names.append(names[-1])
+            elif tok.text == ')' and call_names:
+                call_names.pop(-1)
+
+        tokens.append(tok)
+
+        if offsets[end_line] + end_col > cursor_pos:
+            # we found the cursor, stop reading
+            break
+
+    if call_names:
+        return call_names[-1]
+    elif names:
+        return names[-1]
+    else:
+        return ''
+
+
 def inspect(code, cursor_pos, detail_level):
 
     import json
@@ -120,6 +194,15 @@ def inspect(code, cursor_pos, detail_level):
         doc = definitions[0].docstring()
         found = True
 
+    if not found:
+        # definitions are not always found for wrapped C++ objects, try to get help doc
+        try:
+          import pydoc
+          doc = pydoc.plain(pydoc.render_doc(eval(code), "Help on %s"))
+          found = True
+        except:
+          pass
+
     d = json.dumps(
             {
             'found': found,
@@ -130,6 +213,7 @@ def inspect(code, cursor_pos, detail_level):
     return d
 
 slicer.util.py_complete_request = complete
+slicer.util.py_token_at_cursor = token_at_cursor
 slicer.util.py_inspect_request = inspect
 )";
 
