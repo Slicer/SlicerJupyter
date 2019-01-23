@@ -251,7 +251,7 @@ xjson xSlicerInterpreter::inspect_request_impl(const std::string& code,
   {
     QVariantList args;
     args.push_back(QString::fromStdString(token));
-    args.push_back(token.size());
+    args.push_back(static_cast<unsigned int>(token.size()));
     args.push_back(detail_level);
     executeResult = context.call("slicer.util.py_inspect_request", args);
     documentation = executeResult.toString().toStdString();
