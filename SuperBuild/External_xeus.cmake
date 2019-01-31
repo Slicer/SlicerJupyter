@@ -33,6 +33,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
+  message(">>>>>>>>> Slicer_INSTALL_THIRDPARTY_LIB_DIR: ${Slicer_INSTALL_THIRDPARTY_LIB_DIR}")
+
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
@@ -55,7 +57,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       # Install directories
       -Dxeus_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       -Dxeus_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -DCMAKE_INSTALL_LIBDIR:STRING=lib # Skip default initialization by GNUInstallDirs CMake module
+      -DCMAKE_INSTALL_LIBDIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR} # Skip default initialization by GNUInstallDirs CMake module
       # Options
       -DBUILD_TESTING:BOOL=OFF
       # Depdendencies
