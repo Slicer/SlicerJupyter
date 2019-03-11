@@ -24,6 +24,7 @@ Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extensio
 * Switch to JupyterKernel module in Slicer
 * Select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located.
   * On Windows, by default it is a location such as _C:/Users/(username)/Anaconda3/Scripts_ or _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. If you use virtual environment, specify Script folder of your virtual environment.
+  * on Linux-like systems, `jupyter-kernelspec` will be in your path after installing Jupyter. You can find the directory where it is located by typing `which jupyter-kernelspec` in the terminal.
 * Create and install kernel by clicking _Install Slicer kernel in Jupyter_.
   * If you use Anaconda, then kernel installation may fail with the message _fatal error C1083: Cannot open include file: 'sys/un.h' ... ImportError: DLL load failed: The specified module could not be found._ It is due to [this issue](https://github.com/zeromq/pyzmq/issues/852) and a fix is to reinstall ZeroMQ: open a command prompt in your Scripts folder, type `pip uninstall pyzmq` (answer _Yes_ if asked) then type `pip install pyzmq`.
   * If automatic installation of the kernel fails for any reason, then kernel can be installed manually using this command: `jupyter-kernelspec install <kernelfolder>` (replace <kernelfolder> with the path that is shown in "Slicer kernel folder" field in JupyterKernel module in Slicer)
