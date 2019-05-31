@@ -461,7 +461,7 @@ void qSlicerJupyterKernelModule::stopKernel()
 }
 
 //-----------------------------------------------------------------------------
-bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder)
+bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder, QString* installCommandLine/*=nullptr*/)
 {
   Q_D(qSlicerJupyterKernelModule);
   qSlicerApplication* app = qSlicerApplication::application();
@@ -482,14 +482,21 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
     return false;
   }
 
-  QString kernelspecExecutable = pythonScriptsFolder + "/" + "jupyter-kernelspec";
+  QString kernelspecExecutable = "jupyter-kernelspec";
+  QString kernelspecExecutablePath = pythonScriptsFolder + "/" + kernelspecExecutable;
   QStringList args;
   args << "install" << this->kernelFolderPath() << "--replace" << "--user";
-  qDebug() << Q_FUNC_INFO << ": launching " << kernelspecExecutable << " " << args.join(" ");
+
+  qDebug() << Q_FUNC_INFO << ": launching " << kernelspecExecutablePath << " " << args.join(" ");
+  if (installCommandLine)
+  {
+    (*installCommandLine) = kernelspecExecutable + " " + args.join(" ");
+  }
+  
 
   QProcess kernelSpecProcess;
   kernelSpecProcess.setProcessEnvironment(app->startupEnvironment());
-  kernelSpecProcess.setProgram(kernelspecExecutable);
+  kernelSpecProcess.setProgram(kernelspecExecutablePath);
   kernelSpecProcess.setArguments(args);
   kernelSpecProcess.start();
   bool finished = kernelSpecProcess.waitForFinished();
@@ -505,13 +512,13 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
   }
   if (!finished)
   {
-    qWarning() << Q_FUNC_INFO << " failed: error launching process " << kernelspecExecutable
+    qWarning() << Q_FUNC_INFO << " failed: error launching process " << kernelspecExecutablePath
       << " (code = " << kernelSpecProcess.error() << ")";
     return false;
   }
   if (kernelSpecProcess.exitCode() != 0)
   {
-    qWarning() << Q_FUNC_INFO << " failed: process " << kernelspecExecutable
+    qWarning() << Q_FUNC_INFO << " failed: process " << kernelspecExecutablePath
       << " returned with exit code " << kernelSpecProcess.exitCode();
     return false;
   }
@@ -531,11 +538,11 @@ bool qSlicerJupyterKernelModule::startJupyterNotebook(QString pythonScriptsFolde
     return false;
   }
 
-  QString kernelspecExecutable = pythonScriptsFolder + "/" + "jupyter-notebook";
+  QString kernelExecutable = pythonScriptsFolder + "/" + "jupyter-notebook";
 
   QProcess kernelSpecProcess;
   kernelSpecProcess.setProcessEnvironment(app->startupEnvironment());
-  kernelSpecProcess.setProgram(kernelspecExecutable);
+  kernelSpecProcess.setProgram(kernelExecutable);
 
   // TODO: decide if we want to allow users to start notebook from Slicer.
   // Detached start would require Qt-5.10 and users might want to start the notebook manually, in a virtual environment.

@@ -79,6 +79,8 @@ void qSlicerJupyterKernelModuleWidget::setup()
   // Currently, it has a button for starting jupyter notebook, but it requires Qt-5.10.
   // Also, users may want to run the notebook in a virtual environment.
   d->ControlCollapsibleButton->setVisible(false);
+
+  d->ManualInstallCommandTextEdit->hide();
 }
 
 //-----------------------------------------------------------------------------
@@ -95,15 +97,20 @@ void qSlicerJupyterKernelModuleWidget::onInstallSlicerKernel()
 
   d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation in progress..."));
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
-  bool success = kernelModule->installSlicerKernel(d->PythonScriptsFolderEdit->currentPath());
+  QString installCommand;
+  bool success = kernelModule->installSlicerKernel(d->PythonScriptsFolderEdit->currentPath(), &installCommand);
+  d->ManualInstallCommandTextEdit->setText(installCommand);
   QApplication::restoreOverrideCursor();
   if (success)
   {
     d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation completed successfully."));
+    d->ManualInstallCommandTextEdit->hide();
   }
   else
   {
-    d->InstallSlicerKernelStatusLabel->setText(tr("Installation failed. See log for details."));
+    d->InstallSlicerKernelStatusLabel->setText(tr("Installation failed. See log for details.\n\n"
+      "You may install the kernel manually by running this command:"));
+    d->ManualInstallCommandTextEdit->show();
   }
 }
 
