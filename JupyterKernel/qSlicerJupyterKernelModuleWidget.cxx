@@ -17,6 +17,7 @@
 
 // Qt includes
 #include <QDebug>
+#include <QClipboard>
 
 // SlicerQt includes
 #include "qSlicerJupyterKernelModuleWidget.h"
@@ -69,18 +70,30 @@ void qSlicerJupyterKernelModuleWidget::setup()
   qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
   if (kernelModule)
   {
-    d->KernelFolderValue->setText(kernelModule->kernelFolderPath());
+    QString executable;
+    QStringList args;
+    if (kernelModule->slicerKernelSpecInstallCommandArgs(executable, args))
+    {
+      QString manualInstallCommand = executable + " " + args.join(" ");
+      d->ManualInstallCommandTextEdit->setText(manualInstallCommand);
+    }
   }
 
   connect(d->InstallSlicerKernelPushButton, SIGNAL(clicked()), this, SLOT(onInstallSlicerKernel()));
+  connect(d->CopyCommandToClipboardPushButton, SIGNAL(clicked()), this, SLOT(onCopyInstallCommandToClipboard()));
   connect(d->StartJupyterNotebookPushButton, SIGNAL(clicked()), this, SLOT(onStartJupyterNotebook()));
 
   // Hide control section for now.
   // Currently, it has a button for starting jupyter notebook, but it requires Qt-5.10.
   // Also, users may want to run the notebook in a virtual environment.
   d->ControlCollapsibleButton->setVisible(false);
+}
 
-  d->ManualInstallCommandTextEdit->hide();
+//-----------------------------------------------------------------------------
+void qSlicerJupyterKernelModuleWidget::onCopyInstallCommandToClipboard()
+{
+  Q_D(qSlicerJupyterKernelModuleWidget);
+  QApplication::clipboard()->setText(d->ManualInstallCommandTextEdit->toPlainText());
 }
 
 //-----------------------------------------------------------------------------
@@ -97,20 +110,15 @@ void qSlicerJupyterKernelModuleWidget::onInstallSlicerKernel()
 
   d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation in progress..."));
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
-  QString installCommand;
-  bool success = kernelModule->installSlicerKernel(d->PythonScriptsFolderEdit->currentPath(), &installCommand);
-  d->ManualInstallCommandTextEdit->setText(installCommand);
+  bool success = kernelModule->installSlicerKernel(d->PythonScriptsFolderEdit->currentPath());
   QApplication::restoreOverrideCursor();
   if (success)
   {
     d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation completed successfully."));
-    d->ManualInstallCommandTextEdit->hide();
   }
   else
   {
-    d->InstallSlicerKernelStatusLabel->setText(tr("Installation failed. See log for details.\n\n"
-      "You may install the kernel manually by running this command:"));
-    d->ManualInstallCommandTextEdit->show();
+    d->InstallSlicerKernelStatusLabel->setText(tr("Automatic kernel installation failed. See application log for details."));
   }
 }
 

@@ -41,6 +41,7 @@ public:
 public slots:
 
   void onInstallSlicerKernel();
+  void onCopyInstallCommandToClipboard();
   void onStartJupyterNotebook();
 
 protected:

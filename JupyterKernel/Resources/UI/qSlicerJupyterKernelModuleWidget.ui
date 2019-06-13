@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>504</width>
-    <height>439</height>
+    <height>423</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,59 +20,80 @@
       <string>Setup</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="KernelFolderLabel">
-        <property name="text">
-         <string>Slicer kernel folder:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="KernelFolderValue">
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="PythonScriptsFolderLabel">
-        <property name="text">
-         <string>Python Scripts folder:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="ctkPathLineEdit" name="PythonScriptsFolderEdit">
-        <property name="toolTip">
-         <string>Folder that contains 'jupyter-kernelspec' executable</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QPushButton" name="InstallSlicerKernelPushButton">
-        <property name="text">
-         <string>Install Slicer kernel in Jupyter</string>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Automatic Slicer kernel installation: </string>
         </property>
+        <layout class="QFormLayout" name="formLayout_2">
+         <item row="1" column="0">
+          <widget class="QLabel" name="PythonScriptsFolderLabel">
+           <property name="toolTip">
+            <string>Folder that contains 'jupyter-kernelspec' executable</string>
+           </property>
+           <property name="text">
+            <string>Python Scripts folder:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="ctkPathLineEdit" name="PythonScriptsFolderEdit">
+           <property name="toolTip">
+            <string>Folder that contains 'jupyter-kernelspec' executable</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="QPushButton" name="InstallSlicerKernelPushButton">
+           <property name="text">
+            <string>Install Slicer kernel in Jupyter</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="QLabel" name="InstallSlicerKernelStatusLabel">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="InstallSlicerKernelStatusLabel">
-        <property name="text">
-         <string/>
+      <item row="6" column="0" colspan="2">
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Manual Slicer kernel installation: </string>
         </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QTextEdit" name="ManualInstallCommandTextEdit">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="KernelFolderLabel_2">
+           <property name="text">
+            <string>Run this command in a terminal in your Python environment to install Slicer kernel in Jupyter:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTextEdit" name="ManualInstallCommandTextEdit">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>50</height>
+            </size>
+           </property>
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="CopyCommandToClipboardPushButton">
+           <property name="text">
+            <string>Copy command to clipboard</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>

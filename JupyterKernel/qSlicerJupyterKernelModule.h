@@ -55,8 +55,8 @@ public:
 
   Q_INVOKABLE virtual bool updateKernelSpec();
 
-  // installCommandLine is an optional argument to get back the constructed install command
-  Q_INVOKABLE virtual bool installSlicerKernel(QString pythonScriptsFolder, QString* installCommandLine = nullptr);
+  Q_INVOKABLE virtual bool slicerKernelSpecInstallCommandArgs(QString& executable, QStringList& args);
+  Q_INVOKABLE virtual bool installSlicerKernel(QString pythonScriptsFolder);
   Q_INVOKABLE virtual bool startJupyterNotebook(QString pythonScriptsFolder);
 
   Q_INVOKABLE virtual QString kernelFolderPath();

@@ -460,10 +460,12 @@ void qSlicerJupyterKernelModule::stopKernel()
   qSlicerApplication::application()->exit(0);
 }
 
+
 //-----------------------------------------------------------------------------
-bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder, QString* installCommandLine/*=nullptr*/)
+bool qSlicerJupyterKernelModule::slicerKernelSpecInstallCommandArgs(QString& executable, QStringList &args)
 {
   Q_D(qSlicerJupyterKernelModule);
+
   qSlicerApplication* app = qSlicerApplication::application();
 
   vtkSlicerJupyterKernelLogic* kernelLogic = vtkSlicerJupyterKernelLogic::SafeDownCast(this->logic());
@@ -482,19 +484,31 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
     return false;
   }
 
-  QString kernelspecExecutable = "jupyter-kernelspec";
-  QString kernelspecExecutablePath = pythonScriptsFolder + "/" + kernelspecExecutable;
+  executable = "jupyter-kernelspec";
+  args = QStringList() << "install" << this->kernelFolderPath() << "--replace" << "--user";
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder)
+{
+  Q_D(qSlicerJupyterKernelModule);
+
+  QString kernelspecExecutable;
   QStringList args;
-  args << "install" << this->kernelFolderPath() << "--replace" << "--user";
+  if (!this->slicerKernelSpecInstallCommandArgs(kernelspecExecutable, args))
+  {
+    qWarning() << Q_FUNC_INFO << " failed: slicerKernelSpecInstallCommandArgs failed to determine install command";
+    return false;
+  }
+
+  QString kernelspecExecutablePath = pythonScriptsFolder + "/" + kernelspecExecutable;
 
   qDebug() << Q_FUNC_INFO << ": launching " << kernelspecExecutablePath << " " << args.join(" ");
-  if (installCommandLine)
-  {
-    (*installCommandLine) = kernelspecExecutable + " " + args.join(" ");
-  }
-  
 
   QProcess kernelSpecProcess;
+  qSlicerApplication* app = qSlicerApplication::application();
   kernelSpecProcess.setProcessEnvironment(app->startupEnvironment());
   kernelSpecProcess.setProgram(kernelspecExecutablePath);
   kernelSpecProcess.setArguments(args);
