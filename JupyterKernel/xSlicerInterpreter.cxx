@@ -209,7 +209,8 @@ xjson xSlicerInterpreter::complete_request_impl(const std::string& code,
   }
 
   // TODO error check?
-  xjson result = xjson::parse(executeResult.toString().toStdString());
+  std::string resultStr = executeResult.toString().toStdString();
+  xjson result = xjson::parse(resultStr.c_str());
   return result;
 }
 
@@ -262,7 +263,7 @@ xjson xSlicerInterpreter::inspect_request_impl(const std::string& code,
     // TODO error check?
   }
 
-  xjson result = xjson::parse(documentation);
+  xjson result = xjson::parse(documentation.c_str());
 
   return result;
 }
