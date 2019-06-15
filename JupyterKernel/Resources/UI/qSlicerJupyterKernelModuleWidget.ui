@@ -69,7 +69,7 @@
          <item>
           <widget class="QLabel" name="KernelFolderLabel_2">
            <property name="text">
-            <string>Run this command in a terminal in your Python environment to install Slicer kernel in Jupyter:</string>
+            <string>Run this command in a terminal in your Python environment:</string>
            </property>
           </widget>
          </item>
