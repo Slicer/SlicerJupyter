@@ -10,6 +10,8 @@ using xeus::xjson;
 using xeus::xjson_node;
 using xeus::xhistory_arguments;
 
+class qSlicerJupyterKernelModule;
+
 class xSlicerInterpreter : public xinterpreter
 {
 
@@ -17,6 +19,8 @@ public:
 
     xSlicerInterpreter() = default;
     virtual ~xSlicerInterpreter() = default;
+
+    void set_jupyter_kernel_module(qSlicerJupyterKernelModule* module);
 
 private:
 
@@ -28,12 +32,6 @@ private:
                                bool store_history,
                                const xjson_node* user_expressions,
                                bool allow_stdin) override;
-
-    std::string execute_display_command();
-
-    void show_view_controllers(bool show);
-
-    void force_render();
 
     xjson complete_request_impl(const std::string& code,
                                 int cursor_pos) override;
@@ -54,6 +52,7 @@ private:
     QStringList m_captured_stderr;
 
     bool m_print_debug_output = false;
+    qSlicerJupyterKernelModule* m_jupyter_kernel_module = nullptr;
 };
 
 #endif

@@ -21,18 +21,12 @@
 #include <qSlicerLayoutManager.h>
 #include <qSlicerPythonManager.h>
 
+#include "qSlicerJupyterKernelModule.h"
+
 #include <QBuffer>
 #include <QObject>
 
 #include <PythonQt.h>
-
-// Until very recent Slicer versions, table and plot view controllers
-// are not accessible, therefore we disable access to them.
-// The only impact is that the view controller bar is visible
-// in screen captures.
-// TODO: Enable USE_TABLE_PLOT_CONTROLLER when it becomes available
-// in all supported Slicer versions.
-#undef USE_TABLE_PLOT_CONTROLLER
 
 void xSlicerInterpreter::configure_impl()
 {
@@ -79,12 +73,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
   xjson pub_data;
   QString qscode = QString::fromUtf8(code.c_str());
   QString displayCommand = "display()";
-  if (qscode.trimmed().endsWith(displayCommand))
-  {
-    QVariant executeResult = pythonManager->executeString(qscode.left(qscode.length() - displayCommand.length()));
-    pub_data["image/png"] = execute_display_command();
-  }
-  else if (qscode.endsWith(QString("__kernel_debug_enable()")))
+  if (qscode.endsWith(QString("__kernel_debug_enable()")))
   {
     m_print_debug_output = true;
     pub_data["text/plain"] = "Kernel debug info print enabled.";
@@ -97,7 +86,17 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
   else
   {
     QVariant executeResult = pythonManager->executeString(QString::fromStdString(code));
-    pub_data["text/plain"] = m_captured_stdout.join("").toStdString();
+    if (m_jupyter_kernel_module && !m_jupyter_kernel_module->executeResultDataType().isEmpty())
+    {
+      pub_data[m_jupyter_kernel_module->executeResultDataType().toStdString()] =
+        m_jupyter_kernel_module->executeResultDataValue().toStdString();
+      m_jupyter_kernel_module->setExecuteResultDataType("");
+      m_jupyter_kernel_module->setExecuteResultDataValue("");
+    }
+    else
+    {
+      pub_data["text/plain"] = m_captured_stdout.join("").toStdString();
+    }
   }
 
   xjson result;
@@ -111,77 +110,6 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
   publish_execution_result(execution_counter, std::move(pub_data), xjson::object());
 
   return result;
-}
-
-void xSlicerInterpreter::show_view_controllers(bool show)
-{
-  qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
-  for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
-  {
-    layoutManager->threeDWidget(viewIndex)->threeDController()->setVisible(show);
-  }
-  foreach(QString sliceViewName, layoutManager->sliceViewNames())
-  {
-    layoutManager->sliceWidget(sliceViewName)->sliceController()->setVisible(show);
-  }
-#ifdef USE_TABLE_PLOT_CONTROLLER
-  for (int viewIndex = 0; viewIndex < layoutManager->tableViewCount(); viewIndex++)
-  {
-    layoutManager->tableWidget(viewIndex)->tableController()->setVisible(show);
-  }
-  for (int viewIndex = 0; viewIndex < layoutManager->plotViewCount(); viewIndex++)
-  {
-    layoutManager->plotWidget(viewIndex)->plotController()->setVisible(show);
-  }
-#endif
-}
-
-void xSlicerInterpreter::force_render()
-{
-  qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
-  for (int viewIndex = 0; viewIndex < layoutManager->threeDViewCount(); viewIndex++)
-  {
-    layoutManager->threeDWidget(viewIndex)->threeDView()->forceRender();
-  }
-  foreach(QString sliceViewName, layoutManager->sliceViewNames())
-  {
-    layoutManager->sliceWidget(sliceViewName)->sliceView()->forceRender();
-  }
-#ifdef USE_TABLE_PLOT_CONTROLLER
-  // TODO: the following repaints might not be necessary, but added here
-  // because similar forced paints are needed for slice and 3D views.
-  // Also, calling repaint() method may not be the appropriate way of
-  // forcing re-rendering.
-  for (int viewIndex = 0; viewIndex < layoutManager->tableViewCount(); viewIndex++)
-  {
-    layoutManager->tableWidget(viewIndex)->tableView()->repaint();
-  }
-  for (int viewIndex = 0; viewIndex < layoutManager->plotViewCount(); viewIndex++)
-  {
-    layoutManager->plotWidget(viewIndex)->plotView()->repaint();
-  }
-#endif
-}
-
-std::string xSlicerInterpreter::execute_display_command()
-{
-  show_view_controllers(false);
-
-  // Make sure display updates are completed
-  qSlicerApplication::application()->processEvents();
-  force_render();
-
-  qSlicerLayoutManager* layoutManager = qSlicerApplication::application()->layoutManager();
-  QPixmap screenshot = layoutManager->viewport()->grab();
-  QByteArray bArray;
-  QBuffer buffer(&bArray);
-  buffer.open(QIODevice::WriteOnly);
-  screenshot.save(&buffer, "PNG");
-  QString base64 = QString::fromLatin1(bArray.toBase64().data());
-
-  show_view_controllers(true);
-
-  return base64.toStdString();
 }
 
 xjson xSlicerInterpreter::complete_request_impl(const std::string& code,
@@ -324,4 +252,9 @@ void xSlicerInterpreter::input_reply_impl(const std::string& value)
     std::cout << "Received input_reply" << std::endl;
     std::cout << "value: " << value << std::endl;
   }
+}
+
+void xSlicerInterpreter::set_jupyter_kernel_module(qSlicerJupyterKernelModule* module)
+{
+  m_jupyter_kernel_module = module;
 }

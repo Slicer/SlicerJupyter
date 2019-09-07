@@ -60,12 +60,90 @@
 // TODO move this code somewhere
 auto complete_code = R"(
 
+# Copied over from slicer.util.setViewControllersVisible to make this function available for Slicer-4.10
+def setViewControllersVisible(visible):
+  import slicer
+  lm = slicer.app.layoutManager()
+  for viewIndex in range(lm.threeDViewCount):
+    lm.threeDWidget(viewIndex).threeDController().setVisible(visible)
+  for sliceViewName in lm.sliceViewNames():
+    lm.sliceWidget(sliceViewName).sliceController().setVisible(visible)
+  try:
+    for viewIndex in range(lm.tableViewCount):
+      lm.tableWidget(viewIndex).tableController().setVisible(visible)
+    for viewIndex in range(lm.plotViewCount):
+      lm.plotWidget(viewIndex).plotController().setVisible(visible)
+  except:
+    # this function is not available in this Slicer version
+    pass
+
+# Copied over from slicer.util.setViewControllersVisible to make this function available for Slicer-4.10
+def forceRenderAllViews():
+  import slicer
+  lm = slicer.app.layoutManager()
+  for viewIndex in range(lm.threeDViewCount):
+    lm.threeDWidget(viewIndex).threeDView().forceRender()
+  for sliceViewName in lm.sliceViewNames():
+    lm.sliceWidget(sliceViewName).sliceView().forceRender()
+  for viewIndex in range(lm.tableViewCount):
+    lm.tableWidget(viewIndex).tableView().repaint()
+  for viewIndex in range(lm.plotViewCount):
+    lm.plotWidget(viewIndex).plotView().repaint()
+
 # Create a placeholder for display() helper function to make it available for auto-completion
 # and specify documentation. This display method will not executed but the Slicer Jupyter kernel
 # will intercept the call and performs the necessary action.
-def display():
-  """Display view layout in a Jupyter notebook"""
-  pass
+def display(value=None, type=None, binary=False, filename=None):
+  """Send data to be displayed in Jupyter notebook.
+  If no value is specified then screnshot of the view layout will be sent.
+  If binary is set to True then value is base64-encoded before sent.
+  """
+  if value is None and filename is None:
+    # Capture image of view layout and use that as displayed data
+    layoutManager = slicer.app.layoutManager()
+    try:
+      slicer.util.setViewControllersVisible(False)
+    except:
+      # this function is not available in this Slicer version
+      setViewControllersVisible(False)
+    slicer.app.processEvents()
+    try:
+      slicer.util.forceRenderAllViews()
+    except:
+      # this function is not available in this Slicer version
+      forceRenderAllViews()
+    screenshot = layoutManager.viewport().grab()
+    try:
+      slicer.util.setViewControllersVisible(True)
+    except:
+      # this function is not available in this Slicer version
+      setViewControllersVisible(True)
+    bArray = qt.QByteArray()
+    buffer = qt.QBuffer(bArray)
+    buffer.open(qt.QIODevice.WriteOnly)
+    screenshot.save(buffer, "PNG")
+    slicer.modules.jupyterkernel.executeResultDataValue = bArray.toBase64()
+    slicer.modules.jupyterkernel.executeResultDataType = "image/png"
+  else:
+    if value is None:
+      if binary:
+        value = open(filename, 'rb').read()
+      else:
+        value = open(filename, 'r').read()
+    if binary:
+      # encode binary data as base64
+      import base64
+      import sys
+      if sys.version_info.major==3:
+        slicer.modules.jupyterkernel.executeResultDataValue = base64.b64encode(value).decode('ascii')
+      else:
+        slicer.modules.jupyterkernel.executeResultDataValue = base64.b64encode(value).encode('ascii')
+    else:      
+      slicer.modules.jupyterkernel.executeResultDataValue = value
+    if type is None:
+      slicer.modules.jupyterkernel.executeResultDataType = "text/plain"
+    else:
+      slicer.modules.jupyterkernel.executeResultDataType = type
 
 import sys
 import distutils.spawn
@@ -238,6 +316,8 @@ public:
   xeus::xconfiguration Config;
   QLabel* StatusLabel;
 
+  QString ExecuteResultDataType;
+  QString ExecuteResultDataValue;
 };
 
 //-----------------------------------------------------------------------------
@@ -420,6 +500,7 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
 
     using interpreter_ptr = std::unique_ptr<xSlicerInterpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xSlicerInterpreter());
+    interpreter->set_jupyter_kernel_module(this);
     d->Kernel = new xeus::xkernel(d->Config, "slicer", std::move(interpreter), make_xSlicerServer);
 
     d->Kernel->start();
@@ -578,4 +659,32 @@ QString qSlicerJupyterKernelModule::kernelFolderPath()
   QString kernelFolderPath = QString("%1/%2-%3.%4").arg(kernelLogic->GetModuleShareDirectory().c_str())
     .arg(app->applicationName()).arg(app->majorVersion()).arg(app->minorVersion());
   return kernelFolderPath;
+}
+
+//---------------------------------------------------------------------------
+QString qSlicerJupyterKernelModule::executeResultDataType()
+{
+  Q_D(qSlicerJupyterKernelModule);
+  return d->ExecuteResultDataType;
+}
+
+//---------------------------------------------------------------------------
+void qSlicerJupyterKernelModule::setExecuteResultDataType(const QString& str)
+{
+  Q_D(qSlicerJupyterKernelModule);
+  d->ExecuteResultDataType = str;
+}
+
+//---------------------------------------------------------------------------
+QString qSlicerJupyterKernelModule::executeResultDataValue()
+{
+  Q_D(qSlicerJupyterKernelModule);
+  return d->ExecuteResultDataValue;
+}
+
+//---------------------------------------------------------------------------
+void qSlicerJupyterKernelModule::setExecuteResultDataValue(const QString& str)
+{
+  Q_D(qSlicerJupyterKernelModule);
+  d->ExecuteResultDataValue = str;
 }

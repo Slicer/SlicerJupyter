@@ -37,7 +37,12 @@ Whn you click on the link, Binder launches 3D Slicer with SlicerJupyter extensio
 ![Select Slicer kernel](doc/StartKernel.png)
 
 * While the kernel is starting, "Kernel starting, please wait.." message is displayed. After a few ten seconds Slicer kernel should start.
-* Add `display()` at the end of a cell to display Slicer viewer content in the notebook.
+* Use `display` function to display custom data instead of command outputs
+  * `display()`: show all views (slices, 3D, table, plots)
+  * `display(filename="some/folder/results.txt")`: load displayed content from text file
+  * `display(filename="some/folder/README.md", type="text/markdown")`: load displayed content from file, use custom mime type
+  * `display(filename="some/folder/output.png", type="image/png", binary=True)`: load displayed content from binary file, use custom mime type
+  * `display(value="Print this text")`: set displayed content from variable
 * Hit `Tab` key for auto-complete
 * Hit `Shift`+`Tab` for showing documentation for a method (hit multiple times to show more details). Note: method name must be complete (you can use `Tab` key to complete the name) and the cursor must be inside the name or right after it (not in the parentheses). For example, type `slicer.util.getNode` and hit `Shift`+`Tab`.
 
