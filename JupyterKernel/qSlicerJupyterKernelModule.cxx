@@ -90,13 +90,10 @@ def forceRenderAllViews():
   for viewIndex in range(lm.plotViewCount):
     lm.plotWidget(viewIndex).plotView().repaint()
 
-# Create a placeholder for display() helper function to make it available for auto-completion
-# and specify documentation. This display method will not executed but the Slicer Jupyter kernel
-# will intercept the call and performs the necessary action.
 def display(value=None, type=None, binary=False, filename=None):
-  """Send data to be displayed in Jupyter notebook.
-  If no value is specified then screnshot of the view layout will be sent.
-  If binary is set to True then value is base64-encoded before sent.
+  """Set data to be displayed in Jupyter notebook as command response.
+  If no value is specified then screnshot of the view layout will be used.
+  If binary is set to True then value translated to text using base64-encoding.
   """
   if value is None and filename is None:
     # Capture image of view layout and use that as displayed data
