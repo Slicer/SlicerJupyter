@@ -119,7 +119,7 @@ def display(value=None, type=None, binary=False, filename=None):
     buffer = qt.QBuffer(bArray)
     buffer.open(qt.QIODevice.WriteOnly)
     screenshot.save(buffer, "PNG")
-    slicer.modules.jupyterkernel.executeResultDataValue = bArray.toBase64()
+    slicer.modules.jupyterkernel.executeResultDataValue = bArray.toBase64().data().decode()
     slicer.modules.jupyterkernel.executeResultDataType = "image/png"
   else:
     if value is None:
