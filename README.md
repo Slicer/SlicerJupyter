@@ -17,8 +17,6 @@ When you click on the link, Binder launches 3D Slicer with SlicerJupyter extensi
 
 ### Setup
 
-https://youtu.be/jcRsRw6RC2g
-
 * Install Python and Jupyter notebook
   * Easiest is to install [Anaconda](https://www.anaconda.com/products/individual), but any other Python distributions can be used (see installation instructions [here](http://jupyter.org/install))
   * You can choose any Python version (2.x or 3.x.) and any bitness (32-bit or 64-bit)
@@ -33,7 +31,7 @@ https://youtu.be/jcRsRw6RC2g
 
 See video of installation steps using Anaconda here:
 
-https://youtu.be/jcRsRw6RC2g
+[![](doc/InstallVideoThumbnail.png)](https://youtu.be/jcRsRw6RC2g)
 
 ## Using Slicer from a notebook
 

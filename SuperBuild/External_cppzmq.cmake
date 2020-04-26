@@ -26,7 +26,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "4bd01bc0ef6af2e78f0fb9f9b21c99143383a74e" # the commit after this breaks the build (https://github.com/zeromq/cppzmq/issues/385)
+    "master"
     QUIET
     )
 
