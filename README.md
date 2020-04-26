@@ -17,18 +17,23 @@ When you click on the link, Binder launches 3D Slicer with SlicerJupyter extensi
 
 ### Setup
 
-* [Install Python and Jupyter notebook](http://jupyter.org/install)
+https://youtu.be/jcRsRw6RC2g
+
+* Install Python and Jupyter notebook
+  * Easiest is to install [Anaconda](https://www.anaconda.com/products/individual), but any other Python distributions can be used (see installation instructions [here](http://jupyter.org/install))
   * You can choose any Python version (2.x or 3.x.) and any bitness (32-bit or 64-bit)
   * Adding Python to your PATH environment variable or registering as default Python is not required.
 * Install [3D Slicer](https://download.slicer.org/) and SlicerJupyter extension, restart Slicer
 * Switch to JupyterKernel module in Slicer
-* Select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located.
-  * On Windows, by default it is a location such as _C:/Users/(username)/Anaconda3/Scripts_ or _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. If you use virtual environment, specify Script folder of your virtual environment.
-  * on Linux-like systems, `jupyter-kernelspec` will be in your path after installing Jupyter. You can find the directory where it is located by typing `which jupyter-kernelspec` in the terminal.
-* Create and install kernel by clicking _Install Slicer kernel in Jupyter_.
+* Install Slicer jupyter kernel
+  * Manual installation (recommended): click "Copy command to clipboard" to copy the kernel installation command to the clipboard, start a command prompt in the Python environment where Jupyter is installed, and paste and run the kernel installation command
+  * Automatic installation (maty not work in virtual environments): Select _Python Scripts folder_. This is the folder where _jupyter-kernelspec_ executable is located, then create and install kernel by clicking _Install Slicer kernel in Jupyter_. (On Windows, by default it is a location such as _C:/Users/(username)/Anaconda3/Scripts_ or _c:\Users\(username)\AppData\Local\Programs\Python\Python37-32\Scripts_. If you use virtual environment, specify Script folder of your virtual environment. On Linux/MacOS systems, `jupyter-kernelspec` will be in your path after installing Jupyter. You can find the directory where it is located by typing `which jupyter-kernelspec` in the terminal.) 
   * If you use Anaconda, then kernel installation may fail with the message _fatal error C1083: Cannot open include file: 'sys/un.h' ... ImportError: DLL load failed: The specified module could not be found._ It is due to [this issue](https://github.com/zeromq/pyzmq/issues/852) and a fix is to reinstall ZeroMQ: open a command prompt in your Scripts folder, type `pip uninstall pyzmq` (answer _Yes_ if asked) then type `pip install pyzmq`.
-  * If automatic installation of the kernel fails for any reason, then kernel can be installed manually using this command: `jupyter-kernelspec install <kernelfolder>` (replace <kernelfolder> with the path that is shown in "Slicer kernel folder" field in JupyterKernel module in Slicer)
 * Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
+
+See video of installation steps using Anaconda here:
+
+https://youtu.be/jcRsRw6RC2g
 
 ## Using Slicer from a notebook
 
