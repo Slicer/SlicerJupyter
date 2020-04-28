@@ -20,13 +20,13 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/zeromq/cppzmq.git"
+    "${EP_GIT_PROTOCOL}://github.com/slicer/cppzmq.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "master"
+    "64c20498728f7fff12ebd2d1a4623844830748ef" # slicer-v4.7.0-2020-04-25-3746e5c
     QUIET
     )
 
