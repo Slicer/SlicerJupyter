@@ -544,8 +544,6 @@ bool qSlicerJupyterKernelModule::slicerKernelSpecInstallCommandArgs(QString& exe
 {
   Q_D(qSlicerJupyterKernelModule);
 
-  qSlicerApplication* app = qSlicerApplication::application();
-
   vtkSlicerJupyterKernelLogic* kernelLogic = vtkSlicerJupyterKernelLogic::SafeDownCast(this->logic());
   if (!kernelLogic)
   {
