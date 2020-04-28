@@ -6,13 +6,13 @@
 #include "qSlicerJupyterKernelModule.h"
 
 // STL includes
+#include <memory>
 #include <thread>
 
 // zmq includes
 #include <zmq_addon.hpp>
 
 // xeus includes
-#include <xeus/make_unique.hpp>
 #include <xeus/xserver_zmq.hpp>
 
 // Qt includes
@@ -47,7 +47,7 @@ void xSlicerServer::start_impl(zmq::multipart_t& message)
 
     m_pollTimer->start();
 
-    publish(message);
+    publish(message, xeus::channel::SHELL);
 }
 
 void xSlicerServer::stop_impl()
@@ -69,6 +69,6 @@ void xSlicerServer::stop_impl()
 std::unique_ptr<xeus::xserver> make_xSlicerServer(zmq::context_t& context,
                                                   const xeus::xconfiguration& config)
 {
-    return ::xeus::make_unique<xSlicerServer>(context, config);
+    return std::make_unique<xSlicerServer>(context, config);
 }
 

@@ -47,11 +47,11 @@ void xSlicerInterpreter::configure_impl()
   });
 }
 
-xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
+nl::json xSlicerInterpreter::execute_request_impl(int execution_counter,
   const std::string& code,
-  bool silent,
   bool store_history,
-  const xjson_node* /* user_expressions */,
+  bool silent,
+  nl::json /* user_expressions */,
   bool allow_stdin)
 {
   if (m_print_debug_output)
@@ -59,8 +59,8 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     std::cout << "Received execute_request" << std::endl;
     std::cout << "execution_counter: " << execution_counter << std::endl;
     std::cout << "code: " << code << std::endl;
-    std::cout << "silent: " << silent << std::endl;
     std::cout << "store_history: " << store_history << std::endl;
+    std::cout << "silent: " << silent << std::endl;
     std::cout << "allow_stdin: " << allow_stdin << std::endl;
     std::cout << std::endl;
   }
@@ -70,7 +70,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
 
   qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
 
-  xjson pub_data;
+  nl::json pub_data;
   QString qscode = QString::fromUtf8(code.c_str());
   QString displayCommand = "display()";
   if (qscode.endsWith(QString("__kernel_debug_enable()")))
@@ -99,7 +99,7 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     }
   }
 
-  xjson result;
+  nl::json result;
   result["status"] = "ok";
   if (pythonManager->pythonErrorOccured())
   {
@@ -107,12 +107,12 @@ xjson xSlicerInterpreter::execute_request_impl(int execution_counter,
     pub_data["text/plain"] = m_captured_stderr.join("").toStdString();
   }
 
-  publish_execution_result(execution_counter, std::move(pub_data), xjson::object());
+  publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
 
   return result;
 }
 
-xjson xSlicerInterpreter::complete_request_impl(const std::string& code,
+nl::json xSlicerInterpreter::complete_request_impl(const std::string& code,
   int cursor_pos)
 {
   if (m_print_debug_output)
@@ -138,11 +138,11 @@ xjson xSlicerInterpreter::complete_request_impl(const std::string& code,
 
   // TODO error check?
   std::string resultStr = executeResult.toString().toStdString();
-  xjson result = xjson::parse(resultStr.c_str());
+  nl::json result = nl::json::parse(resultStr.c_str());
   return result;
 }
 
-xjson xSlicerInterpreter::inspect_request_impl(const std::string& code,
+nl::json xSlicerInterpreter::inspect_request_impl(const std::string& code,
   int cursor_pos,
   int detail_level)
 {
@@ -191,34 +191,12 @@ xjson xSlicerInterpreter::inspect_request_impl(const std::string& code,
     // TODO error check?
   }
 
-  xjson result = xjson::parse(documentation.c_str());
+  nl::json result = nl::json::parse(documentation.c_str());
 
   return result;
 }
 
-xjson xSlicerInterpreter::history_request_impl(const xhistory_arguments& args)
-{
-  if (m_print_debug_output)
-  {
-    std::cout << "Received history_request" << std::endl;
-    std::cout << "output: " << args.m_output << std::endl;
-    std::cout << "raw: " << args.m_raw << std::endl;
-    std::cout << "hist_access_type: " << args.m_hist_access_type << std::endl;
-    std::cout << "session: " << args.m_session << std::endl;
-    std::cout << "start: " << args.m_start << std::endl;
-    std::cout << "stop: " << args.m_stop << std::endl;
-    std::cout << "n: " << args.m_n << std::endl;
-    std::cout << "pattern: " << args.m_pattern << std::endl;
-    std::cout << "unique: " << args.m_unique << std::endl;
-    std::cout << std::endl;
-  }
-
-  xjson result;
-  result["history"] = { {args.m_session, 0, ""} };
-  return result;
-}
-
-xjson xSlicerInterpreter::is_complete_request_impl(const std::string& code)
+nl::json xSlicerInterpreter::is_complete_request_impl(const std::string& code)
 {
   if (m_print_debug_output)
   {
@@ -226,14 +204,14 @@ xjson xSlicerInterpreter::is_complete_request_impl(const std::string& code)
     std::cout << "code: " << code << std::endl;
     std::cout << std::endl;
   }
-  xjson result;
+  nl::json result;
   result["status"] = "complete";
   return result;
 }
 
-xjson xSlicerInterpreter::kernel_info_request_impl()
+nl::json xSlicerInterpreter::kernel_info_request_impl()
 {
-  xjson result;
+  nl::json result;
   result["language_info"]["mimetype"] = "text/x-python";
   result["language_info"]["name"] = "python";
   result["language_info"]["nbconvert_exporter"] = "python";
@@ -245,12 +223,12 @@ xjson xSlicerInterpreter::kernel_info_request_impl()
   return result;
 }
 
-void xSlicerInterpreter::input_reply_impl(const std::string& value)
+void xSlicerInterpreter::shutdown_request_impl()
 {
   if (m_print_debug_output)
   {
-    std::cout << "Received input_reply" << std::endl;
-    std::cout << "value: " << value << std::endl;
+    std::cout << "Received shutdown_request" << std::endl;
+    std::cout << std::endl;
   }
 }
 
