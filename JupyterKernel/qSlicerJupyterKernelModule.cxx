@@ -498,7 +498,17 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
     using interpreter_ptr = std::unique_ptr<xSlicerInterpreter>;
     interpreter_ptr interpreter = interpreter_ptr(new xSlicerInterpreter());
     interpreter->set_jupyter_kernel_module(this);
-    d->Kernel = new xeus::xkernel(d->Config, "slicer", std::move(interpreter), make_xSlicerServer);
+
+    using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
+    history_manager_ptr hist = xeus::make_in_memory_history_manager();
+
+    d->Kernel = new xeus::xkernel(d->Config,
+                                  "slicer",
+                                  std::move(interpreter),
+                                  std::move(hist),
+                                  nullptr,
+                                  make_xSlicerServer,
+                                  xeus::make_null_debugger);
 
     d->Kernel->start();
 

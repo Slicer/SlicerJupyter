@@ -2,7 +2,7 @@
 set(proj xeus)
 
 # Set dependency list
-set(${proj}_DEPENDS nlohmann_json xtl ZeroMQ cppzmq cryptopp)
+set(${proj}_DEPENDS nlohmann_json xtl ZeroMQ cppzmq)
 
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
@@ -26,14 +26,27 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "dfca7176e3ae8cf880dab8786b71414238a8f215" # master
+    "b089c526c2435b88a143f14e5700952c9a2e4009" # master
     QUIET
     )
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
-
-  message(">>>>>>>>> Slicer_INSTALL_THIRDPARTY_LIB_DIR: ${Slicer_INSTALL_THIRDPARTY_LIB_DIR}")
+ 
+  set(EXTERNAL_PROJECT_CMAKE_CACHE_ARGS)
+  if(UNIX)
+    list(APPEND EXTERNAL_PROJECT_CMAKE_CACHE_ARGS
+      -DOPENSSL_SSL_LIBRARY:FILEPATH=${OPENSSL_SSL_LIBRARY}
+      -DOPENSSL_CRYPTO_LIBRARY:FILEPATH=${OPENSSL_CRYPTO_LIBRARY}
+      )
+  else()
+    list(APPEND EXTERNAL_PROJECT_CMAKE_CACHE_ARGS
+      -DLIB_EAY_DEBUG:FILEPATH=${LIB_EAY_DEBUG}
+      -DLIB_EAY_RELEASE:FILEPATH=${LIB_EAY_RELEASE}
+      -DSSL_EAY_DEBUG:FILEPATH=${SSL_EAY_DEBUG}
+      -DSSL_EAY_RELEASE:FILEPATH=${SSL_EAY_RELEASE}
+      )
+  endif()
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
@@ -65,7 +78,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -Dxtl_DIR:PATH=${xtl_DIR}
       -DZeroMQ_DIR:PATH=${ZeroMQ_DIR}
       -Dcppzmq_DIR:PATH=${cppzmq_DIR}
-      -Dcryptopp_DIR:PATH=${cryptopp_DIR}
+      -DOPENSSL_INCLUDE_DIR:PATH=${OPENSSL_INCLUDE_DIR}
+      ${EXTERNAL_PROJECT_CMAKE_CACHE_ARGS}
     INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}

@@ -6,9 +6,6 @@
 #include <QStringList>
 
 using xeus::xinterpreter;
-using xeus::xjson;
-using xeus::xjson_node;
-using xeus::xhistory_arguments;
 
 class qSlicerJupyterKernelModule;
 
@@ -26,27 +23,25 @@ private:
 
     void configure_impl() override;
 
-    xjson execute_request_impl(int execution_counter,
+    nl::json execute_request_impl(int execution_counter,
                                const std::string& code,
-                               bool silent,
                                bool store_history,
-                               const xjson_node* user_expressions,
+                               bool silent,
+                               nl::json user_expressions,
                                bool allow_stdin) override;
 
-    xjson complete_request_impl(const std::string& code,
+    nl::json complete_request_impl(const std::string& code,
                                 int cursor_pos) override;
 
-    xjson inspect_request_impl(const std::string& code,
+    nl::json inspect_request_impl(const std::string& code,
                                int cursor_pos,
                                int detail_level) override;
 
-    xjson history_request_impl(const xhistory_arguments& args) override;
+    nl::json is_complete_request_impl(const std::string& code) override;
 
-    xjson is_complete_request_impl(const std::string& code) override;
+    nl::json kernel_info_request_impl() override;
 
-    xjson kernel_info_request_impl() override;
-
-    void input_reply_impl(const std::string& value) override;
+    void shutdown_request_impl() override;
 
     QStringList m_captured_stdout;
     QStringList m_captured_stderr;
