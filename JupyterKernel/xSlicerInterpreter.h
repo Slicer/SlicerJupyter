@@ -1,20 +1,22 @@
 #ifndef xSlicerInterpreter_h
 #define xSlicerInterpreter_h
 
-#include <xeus/xinterpreter.hpp>
+//#include <xeus/xinterpreter.hpp>
+
+#include <xeus-python/xinterpreter.hpp>
 
 #include <QStringList>
 
-using xeus::xinterpreter;
+//using xpyt::interpreter;
 
 class qSlicerJupyterKernelModule;
 
-class xSlicerInterpreter : public xinterpreter
+class xSlicerInterpreter : public xpyt::interpreter
 {
 
 public:
 
-    xSlicerInterpreter() = default;
+    xSlicerInterpreter();
     virtual ~xSlicerInterpreter() = default;
 
     void set_jupyter_kernel_module(qSlicerJupyterKernelModule* module);
@@ -42,9 +44,6 @@ private:
     nl::json kernel_info_request_impl() override;
 
     void shutdown_request_impl() override;
-
-    QStringList m_captured_stdout;
-    QStringList m_captured_stderr;
 
     bool m_print_debug_output = false;
     qSlicerJupyterKernelModule* m_jupyter_kernel_module = nullptr;

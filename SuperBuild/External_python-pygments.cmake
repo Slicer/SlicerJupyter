@@ -1,4 +1,4 @@
-set(proj python-jedi)
+set(proj python-pygments)
 
 # Set dependency list
 set(${proj}_DEPENDENCIES "")
@@ -8,7 +8,7 @@ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj
 
 if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   ExternalProject_FindPythonPackage(
-    MODULE_NAME "jedi"
+    MODULE_NAME "pygments"
     REQUIRED
     )
 endif()
@@ -21,7 +21,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_VERSION
-    "0.17.0"
+    "2.3.1"
     QUIET
     )
 
@@ -35,16 +35,16 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   set(_no_binary "")
 
-  # Install jedi and requirements
+  # Install pygments and requirements
   # note: --force-reinstall ensures the python dependency is installed within
   #       this library's prefix for packaging.
-  set(_install_jedi COMMAND ${CMAKE_COMMAND}
+  set(_install_pygments COMMAND ${CMAKE_COMMAND}
       -E env
         PYTHONNOUSERSITE=1
         CC=${CMAKE_C_COMPILER}
         PYTHONPATH=${python_sitepackages_DIR}
         ${wrapper_script} ${PYTHON_EXECUTABLE} -m pip install
-          jedi==${${CMAKE_PROJECT_NAME}_${proj}_VERSION} ${_no_binary}
+          pygments==${${CMAKE_PROJECT_NAME}_${proj}_VERSION} ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
           --force-reinstall
     )
@@ -57,7 +57,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     BUILD_COMMAND ""
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E  echo_append ""
-    ${_install_jedi}
+    ${_install_pygments}
     DEPENDS
       ${${proj}_DEPENDENCIES}
     )

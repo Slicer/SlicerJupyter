@@ -61,7 +61,7 @@ public:
   Q_INVOKABLE virtual bool installSlicerKernel(QString pythonScriptsFolder);
   Q_INVOKABLE virtual bool startJupyterNotebook(QString pythonScriptsFolder);
 
-  Q_INVOKABLE virtual QString kernelFolderPath();
+  Q_INVOKABLE virtual QString resourceFolderPath();
 
   QString executeResultDataType();
   void setExecuteResultDataType(const QString& str);

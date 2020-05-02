@@ -40,12 +40,11 @@ See video of installation steps using Anaconda here:
 ![Select Slicer kernel](doc/StartKernel.png)
 
 * While the kernel is starting, "Kernel starting, please wait.." message is displayed. After a few ten seconds Slicer kernel should start.
-* Use `display` function to display custom data instead of command outputs
-  * `display()`: show all views (slices, 3D, table, plots)
-  * `display(filename="some/folder/results.txt")`: load displayed content from text file
-  * `display(filename="some/folder/README.md", type="text/markdown")`: load displayed content from file, use custom mime type
-  * `display(filename="some/folder/output.png", type="image/png", binary=True)`: load displayed content from binary file, use custom mime type
-  * `display(value="Print this text")`: set displayed content from variable
+* Slicer-specific display functions (they create objects that can be displayed in the notebook):
+  * `slicer.nb.displayViews()` displays current view layout (slice, 3D, table, etc. views) as shown in the application
+  * `slicer.nb.displayModel(modelNode)` displays a model node (rendered into an image)
+  * `slicer.nb.displayTable(tableNode)` displays a table node (by converting it to a pandas dataframe)
+  * Current display features will improve and probably more display features will come that allows quick viewining of a MRML node in a notebook.
 * Hit `Tab` key for auto-complete
 * Hit `Shift`+`Tab` for showing documentation for a method (hit multiple times to show more details). Note: method name must be complete (you can use `Tab` key to complete the name) and the cursor must be inside the name or right after it (not in the parentheses). For example, type `slicer.util.getNode` and hit `Shift`+`Tab`.
 
@@ -65,7 +64,7 @@ import SampleData
 sampleDataLogic = SampleData.SampleDataLogic()
 volume = sampleDataLogic.downloadCTChest()
 slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
-display()
+slicer.displayViews()
 </pre>
 
 Create a surface mesh from the image:
@@ -81,7 +80,7 @@ grayMaker = slicer.modules.grayscalemodelmaker
 slicer.cli.runSync(grayMaker, None, parameters)
 slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUp3DView)
 slicer.app.layoutManager().threeDWidget(0).threeDView().resetCamera()
-display()
+slicer.displayModel(outModel, orientation=[0,90,0])
 </pre>
 
 
@@ -112,6 +111,18 @@ jupyter-kernelspec install /tmp/SlicerJupyter-build/inner-build/share/Slicer-4.9
 workon jupyter_env
 python -m jupyter notebook
 ```
+
+## Launch a kernel manually
+
+Type this into Slicer's Python console to manually start a kernel that a notebook can connect to:
+
+```python
+connection_file=r'C:\Users\andra\AppData\Roaming\jupyter\runtime\kernel-3100f53f-3433-40f9-8978-c72ed8f88515.json'
+print('Jupyter connection file: ['+connection_file+']')
+slicer.modules.jupyterkernel.startKernel(connection_file)
+```
+
+Path of `connection_file` is printed on jupyter notebook's terminal window.
 
 ## Special commands
 

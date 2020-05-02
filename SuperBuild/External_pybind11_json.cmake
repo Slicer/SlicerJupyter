@@ -1,8 +1,8 @@
 
-set(proj nlohmann_json)
+set(proj pybind11_json)
 
 # Set dependency list
-set(${proj}_DEPENDS "")
+set(${proj}_DEPENDS pybind11 nlohmann_json)
 
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
@@ -12,27 +12,26 @@ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 endif()
 
 # Sanity checks
-if(DEFINED nlohmann_json_DIR AND NOT EXISTS ${nlohmann_json_DIR})
-  message(FATAL_ERROR "nlohmann_json_DIR variable is defined but corresponds to nonexistent directory")
+if(DEFINED pybind11_json_DIR AND NOT EXISTS ${pybind11_json_DIR})
+  message(FATAL_ERROR "pybind11_json_DIR variable is defined but corresponds to nonexistent directory")
 endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/nlohmann/json.git"
+    "${EP_GIT_PROTOCOL}://github.com/pybind/pybind11_json.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "v3.6.1"
+    "0.2.6"
     QUIET
     )
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
-  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
-  set(EP_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
+  set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)    
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
@@ -54,15 +53,23 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
       # Install directories
-      -Dnlohmann_json_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -Dnlohmann_json_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dpybind11_json_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dpybind11_json_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       # Options
-      -DCMAKE_INSTALL_PREFIX:PATH=${EP_INSTALL_DIR}
-      -DBUILD_TESTING:BOOL=OFF
+      -DBUILD_TESTS:BOOL=OFF
+      # Dependencies
+      -Dpybind11_DIR:PATH=${pybind11_DIR}
+      -Dnlohmann_json_DIR:PATH=${nlohmann_json_DIR} 
+
+      -DPYTHON_EXECUTABLE:PATH=${PYTHON_EXECUTABLE}
+      -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+      -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR} 
+
+    INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
     )
-  set(${proj}_DIR ${EP_INSTALL_DIR}/lib/cmake/nlohmann_json/)
+  set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
