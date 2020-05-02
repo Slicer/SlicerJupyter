@@ -57,241 +57,6 @@
 #include <QFileInfo>
 #include <QProcess>
 
-// TODO move this code somewhere
-auto complete_code = R"(
-
-# Copied over from slicer.util.setViewControllersVisible to make this function available for Slicer-4.10
-def setViewControllersVisible(visible):
-  import slicer
-  lm = slicer.app.layoutManager()
-  for viewIndex in range(lm.threeDViewCount):
-    lm.threeDWidget(viewIndex).threeDController().setVisible(visible)
-  for sliceViewName in lm.sliceViewNames():
-    lm.sliceWidget(sliceViewName).sliceController().setVisible(visible)
-  try:
-    for viewIndex in range(lm.tableViewCount):
-      lm.tableWidget(viewIndex).tableController().setVisible(visible)
-    for viewIndex in range(lm.plotViewCount):
-      lm.plotWidget(viewIndex).plotController().setVisible(visible)
-  except:
-    # this function is not available in this Slicer version
-    pass
-
-# Copied over from slicer.util.setViewControllersVisible to make this function available for Slicer-4.10
-def forceRenderAllViews():
-  import slicer
-  lm = slicer.app.layoutManager()
-  for viewIndex in range(lm.threeDViewCount):
-    lm.threeDWidget(viewIndex).threeDView().forceRender()
-  for sliceViewName in lm.sliceViewNames():
-    lm.sliceWidget(sliceViewName).sliceView().forceRender()
-  for viewIndex in range(lm.tableViewCount):
-    lm.tableWidget(viewIndex).tableView().repaint()
-  for viewIndex in range(lm.plotViewCount):
-    lm.plotWidget(viewIndex).plotView().repaint()
-
-def display(value=None, type=None, binary=False, filename=None):
-  """Set data to be displayed in Jupyter notebook as command response.
-  If no value is specified then screnshot of the view layout will be used.
-  If binary is set to True then value translated to text using base64-encoding.
-  """
-  if value is None and filename is None:
-    # Capture image of view layout and use that as displayed data
-    layoutManager = slicer.app.layoutManager()
-    try:
-      slicer.util.setViewControllersVisible(False)
-    except:
-      # this function is not available in this Slicer version
-      setViewControllersVisible(False)
-    slicer.app.processEvents()
-    try:
-      slicer.util.forceRenderAllViews()
-    except:
-      # this function is not available in this Slicer version
-      forceRenderAllViews()
-    screenshot = layoutManager.viewport().grab()
-    try:
-      slicer.util.setViewControllersVisible(True)
-    except:
-      # this function is not available in this Slicer version
-      setViewControllersVisible(True)
-    bArray = qt.QByteArray()
-    buffer = qt.QBuffer(bArray)
-    buffer.open(qt.QIODevice.WriteOnly)
-    screenshot.save(buffer, "PNG")
-    slicer.modules.jupyterkernel.executeResultDataValue = bArray.toBase64().data().decode()
-    slicer.modules.jupyterkernel.executeResultDataType = "image/png"
-  else:
-    if value is None:
-      if binary:
-        value = open(filename, 'rb').read()
-      else:
-        value = open(filename, 'r').read()
-    if binary:
-      # encode binary data as base64
-      import base64
-      import sys
-      if sys.version_info.major==3:
-        slicer.modules.jupyterkernel.executeResultDataValue = base64.b64encode(value).decode('ascii')
-      else:
-        slicer.modules.jupyterkernel.executeResultDataValue = base64.b64encode(value).encode('ascii')
-    else:      
-      slicer.modules.jupyterkernel.executeResultDataValue = value
-    if type is None:
-      slicer.modules.jupyterkernel.executeResultDataType = "text/plain"
-    else:
-      slicer.modules.jupyterkernel.executeResultDataType = type
-
-import sys
-import distutils.spawn
-sys.executable = distutils.spawn.find_executable('python-real') or distutils.spawn.find_executable('python')
-
-# TODO put everything in try block and return errors on side channel
-
-def complete(code, cursor_pos):
-
-    import json
-    import jedi
-    import jedi.api.environment
-
-    # hack to work around: https://github.com/davidhalter/jedi/issues/1142
-    jedi.api.environment.get_default_environment = lambda: jedi.api.environment.SameEnvironment()
-
-    lines = code[:cursor_pos].splitlines() or [code]
-    line, column = len(lines), len(lines[-1])
-
-    script = jedi.Interpreter(code, line=line, column=column, namespaces=[globals()])
-    completions = script.completions()
-
-    cursor_start = cursor_pos - (len(completions[0].name_with_symbols) - len(completions[0].complete))
-
-    d = json.dumps(
-            {
-            'matches': [x.name_with_symbols for x in completions],
-            'cursor_start': cursor_start,
-            'cursor_end': cursor_pos,
-            'metadata': {},
-            'status': 'ok'
-            })
-    return d
-
-
-# Code from IPython to make inspection work inside parentheses after method name
-
-from collections import namedtuple
-from io import StringIO
-from keyword import iskeyword
-import tokenize
-Token = namedtuple('Token', ['token', 'text', 'start', 'end', 'line'])
-
-def generate_tokens(readline):
-    try:
-        for token in tokenize.generate_tokens(readline):
-            yield token
-    except tokenize.TokenError:
-        # catch EOF error
-        return
-
-def token_at_cursor(cell, cursor_pos=0):
-    names = []
-    tokens = []
-    call_names = []
-
-    offsets = {1: 0} # lines start at 1
-    for tup in generate_tokens(StringIO(cell).readline):
-
-        tok = Token(*tup)
-
-        # token, text, start, end, line = tup
-        start_line, start_col = tok.start
-        end_line, end_col = tok.end
-        if end_line + 1 not in offsets:
-            # keep track of offsets for each line
-            lines = tok.line.splitlines(True)
-            for lineno, line in enumerate(lines, start_line + 1):
-                if lineno not in offsets:
-                    offsets[lineno] = offsets[lineno-1] + len(line)
-
-        offset = offsets[start_line]
-        # allow '|foo' to find 'foo' at the beginning of a line
-        boundary = cursor_pos + 1 if start_col == 0 else cursor_pos
-        if offset + start_col >= boundary:
-            # current token starts after the cursor,
-            # don't consume it
-            break
-
-        if tok.token == tokenize.NAME and not iskeyword(tok.text):
-            if names and tokens and tokens[-1].token == tokenize.OP and tokens[-1].text == '.':
-                names[-1] = '%s.%s' % (names[-1], tok.text)
-            else:
-                names.append(tok.text)
-        elif tok.token == tokenize.OP:
-            if tok.text == '=' and names:
-                # don't inspect the lhs of an assignment
-                names.pop(-1)
-            if tok.text == '(' and names:
-                # if we are inside a function call, inspect the function
-                call_names.append(names[-1])
-            elif tok.text == ')' and call_names:
-                call_names.pop(-1)
-
-        tokens.append(tok)
-
-        if offsets[end_line] + end_col > cursor_pos:
-            # we found the cursor, stop reading
-            break
-
-    if call_names:
-        return call_names[-1]
-    elif names:
-        return names[-1]
-    else:
-        return ''
-
-
-def inspect(code, cursor_pos, detail_level):
-
-    import json
-    import jedi
-    import jedi.api.environment
-
-    # hack to work around: https://github.com/davidhalter/jedi/issues/1142
-    jedi.api.environment.get_default_environment = lambda: jedi.api.environment.SameEnvironment()
-
-    lines = code[:cursor_pos].splitlines() or [code]
-    line, column = len(lines), len(lines[-1])
-
-    script = jedi.Interpreter(code, line=line, column=column, namespaces=[globals()])
-    definitions = script.goto_definitions()
-    found = False
-    doc = ''
-    if definitions:
-        doc = definitions[0].docstring()
-        found = True
-
-    if not found:
-        # definitions are not always found for wrapped C++ objects, try to get help doc
-        try:
-          import pydoc
-          doc = pydoc.plain(pydoc.render_doc(eval(code), "Help on %s"))
-          found = True
-        except:
-          pass
-
-    d = json.dumps(
-            {
-            'found': found,
-            'data': {'text/plain': doc},
-            'metadata': {},
-            'status': 'ok'
-            })
-    return d
-
-slicer.util.py_complete_request = complete
-slicer.util.py_token_at_cursor = token_at_cursor
-slicer.util.py_inspect_request = inspect
-)";
-
 //-----------------------------------------------------------------------------
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QtPlugin>
@@ -391,7 +156,7 @@ void qSlicerJupyterKernelModule::setup()
 //-----------------------------------------------------------------------------
 bool qSlicerJupyterKernelModule::updateKernelSpec()
 {
-  QString kernelFolder = this->kernelFolderPath();
+  QString kernelFolder = this->resourceFolderPath();
   if (kernelFolder.isEmpty())
   {
     qWarning() << Q_FUNC_INFO << " failed: invalid kernel folder path";
@@ -413,7 +178,7 @@ bool qSlicerJupyterKernelModule::updateKernelSpec()
   QTextStream in(&templateFile);
   QString kernelJson = in.readAll();
   templateFile.close();
-  
+
   qSlicerApplication* app = qSlicerApplication::application();
   if (kernelJson.indexOf("{slicer_application_name}") != -1)
   {
@@ -514,10 +279,19 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
 
     d->Started = true;
 
-    // TODO init where?
-    // Initialize the slicer.util.py_complete
-    qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
-    pythonManager->executeString(QString::fromStdString(complete_code));
+    QString kernelConfigurePy = this->resourceFolderPath() + "/kernel-configure.py";
+    QFile kernelConfigurePyFile(kernelConfigurePy);
+    if (kernelConfigurePyFile.open(QFile::ReadOnly | QFile::Text))
+    {
+      QTextStream in(&kernelConfigurePyFile);
+      QString kernelConfigurePyContent = in.readAll();
+      qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
+      pythonManager->executeString(kernelConfigurePyContent);
+    }
+    else
+    {
+      qWarning() << Q_FUNC_INFO << " failed: cannot open kernel configure " << kernelConfigurePy;
+    }
 
     QStatusBar* statusBar = NULL;
     if (qSlicerApplication::application()->mainWindow())
@@ -571,7 +345,7 @@ bool qSlicerJupyterKernelModule::slicerKernelSpecInstallCommandArgs(QString& exe
   }
 
   executable = "jupyter-kernelspec";
-  args = QStringList() << "install" << this->kernelFolderPath() << "--replace" << "--user";
+  args = QStringList() << "install" << this->resourceFolderPath() << "--replace" << "--user";
 
   return true;
 }
@@ -652,7 +426,7 @@ bool qSlicerJupyterKernelModule::startJupyterNotebook(QString pythonScriptsFolde
 }
 
 //---------------------------------------------------------------------------
-QString qSlicerJupyterKernelModule::kernelFolderPath()
+QString qSlicerJupyterKernelModule::resourceFolderPath()
 {
   vtkSlicerJupyterKernelLogic* kernelLogic = vtkSlicerJupyterKernelLogic::SafeDownCast(this->logic());
   if (!kernelLogic)
@@ -661,9 +435,9 @@ QString qSlicerJupyterKernelModule::kernelFolderPath()
     return "";
   }
   qSlicerApplication* app = qSlicerApplication::application();
-  QString kernelFolderPath = QString("%1/%2-%3.%4").arg(kernelLogic->GetModuleShareDirectory().c_str())
+  QString path = QString("%1/%2-%3.%4").arg(kernelLogic->GetModuleShareDirectory().c_str())
     .arg(app->applicationName()).arg(app->majorVersion()).arg(app->minorVersion());
-  return kernelFolderPath;
+  return path;
 }
 
 //---------------------------------------------------------------------------

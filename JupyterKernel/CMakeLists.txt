@@ -6,6 +6,8 @@ set(MODULE_TITLE ${MODULE_NAME})
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 find_package(xeus REQUIRED)
+find_package(xeus-python REQUIRED)
+find_package(pybind11 REQUIRED)
 
 #-----------------------------------------------------------------------------
 add_subdirectory(Logic)
@@ -17,6 +19,7 @@ set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
+  ${pybind11_INCLUDE_DIR}
   )
 
 set(MODULE_SRCS
@@ -42,6 +45,7 @@ set(MODULE_UI_SRCS
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   xeus
+  xeus-python
   )
 
 set(MODULE_RESOURCES
@@ -71,6 +75,11 @@ configure_file(
   ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION}/kernel-template.json
   @ONLY
   )
+configure_file(
+  Resources/kernel-configure.py
+  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION}/kernel-configure.py
+  @ONLY
+  )
 # Install tree
 configure_file(
   Resources/kernel-template.json.in
@@ -81,7 +90,11 @@ install(
   FILES ${SlicerJupyter_BINARY_DIR}/kernel-template.json
   DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION} COMPONENT Runtime
   )
-  
+install(
+  FILES Resources/kernel-configure.py
+  DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/${Slicer_MAIN_PROJECT_APPLICATION_NAME}-${Slicer_VERSION} COMPONENT Runtime
+  )
+
 foreach(res IN ITEMS 32 64)
   # Build tree
   configure_file(

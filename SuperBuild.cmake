@@ -19,7 +19,10 @@ set(proj ${SUPERBUILD_TOPLEVEL_PROJECT})
 # Project dependencies
 set(${proj}_DEPENDS
    xeus
+   xeus-python
+   pybind11
    python-jedi
+   python-pygments
    )
 
 ExternalProject_Include_Dependencies(${proj}
@@ -52,6 +55,10 @@ ExternalProject_Add(${proj}
     # Superbuild
     -D${EXTENSION_NAME}_SUPERBUILD:BOOL=OFF
     -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
+
+    -Dpybind11_json_DIR:PATH=${pybind11_json_DIR}
+    -Dpybind11_DIR:PATH=${pybind11_DIR}
+
   DEPENDS
     ${${proj}_DEPENDS}
   )

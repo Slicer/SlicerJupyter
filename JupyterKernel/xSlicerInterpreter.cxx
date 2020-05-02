@@ -4,29 +4,25 @@
 
 #include <xeus/xguid.hpp>
 
-#include <qMRMLPlotView.h>
-#include <qMRMLPlotViewControllerWidget.h>
-#include <qMRMLPlotWidget.h>
-#include <qMRMLSliceWidget.h>
-#include <qMRMLSliceControllerWidget.h>
-#include <qMRMLSliceView.h>
-#include <qMRMLTableView.h>
-#include <qMRMLTableViewControllerWidget.h>
-#include <qMRMLTableWidget.h>
-#include <qMRMLThreeDViewControllerWidget.h>
-#include <qMRMLThreeDWidget.h>
-#include <qMRMLThreeDView.h>
-
 #include <qSlicerApplication.h>
-#include <qSlicerLayoutManager.h>
 #include <qSlicerPythonManager.h>
 
 #include "qSlicerJupyterKernelModule.h"
 
-#include <QBuffer>
 #include <QObject>
 
 #include <PythonQt.h>
+
+xSlicerInterpreter::xSlicerInterpreter()
+  : xpyt::interpreter(false, false)
+  // Disable built-in output and display redirection, as it would prevent
+  // console output and execution results from appearing in Slicer's
+  // Python console and application log.
+  // We call publish_stream instead when PythonQt emits outputs and
+  // use a custom display hook.
+{
+}
+
 
 void xSlicerInterpreter::configure_impl()
 {
@@ -34,24 +30,35 @@ void xSlicerInterpreter::configure_impl()
     std::cout << "Comm opened for target: " << comm.target().name() << std::endl;
   };
   comm_manager().register_comm_target("echo_target", handle_comm_opened);
-  //using function_type = std::function<void(xeus::xcomm&&, const xeus::xmessage&)>;
 
+  // Custom output redirection
   QObject::connect(PythonQt::self(), &PythonQt::pythonStdOut,
     [=](const QString& text) {
-    m_captured_stdout << text;
+    publish_stream("stdout", text.toStdString());
   });
-
   QObject::connect(PythonQt::self(), &PythonQt::pythonStdErr,
     [=](const QString& text) {
-    m_captured_stderr << text;
+    publish_stream("stderr", text.toStdString());
   });
+
+  // Custom display redirection
+  // Make xeus-python display hook available as slicer.xeusPythonDisplayHook
+  py::module slicer_module = py::module::import("slicer");
+  slicer_module.attr("xeusPythonDisplayHook") = m_displayhook;
+
+  py::gil_scoped_acquire acquire;
+  py::module jedi = py::module::import("jedi");
+  jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
+    jedi.attr("api").attr("environment").attr("SameEnvironment")();
+    });
+
 }
 
 nl::json xSlicerInterpreter::execute_request_impl(int execution_counter,
   const std::string& code,
   bool store_history,
   bool silent,
-  nl::json /* user_expressions */,
+  nl::json user_expressions,
   bool allow_stdin)
 {
   if (m_print_debug_output)
@@ -65,50 +72,29 @@ nl::json xSlicerInterpreter::execute_request_impl(int execution_counter,
     std::cout << std::endl;
   }
 
-  m_captured_stdout.clear();
-  m_captured_stderr.clear();
-
   qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
 
   nl::json pub_data;
+  nl::json result;
   QString qscode = QString::fromUtf8(code.c_str());
-  QString displayCommand = "display()";
   if (qscode.endsWith(QString("__kernel_debug_enable()")))
   {
     m_print_debug_output = true;
     pub_data["text/plain"] = "Kernel debug info print enabled.";
+    result["status"] = "ok";
   }
   else if (qscode.endsWith(QString("__kernel_debug_disable()")))
   {
     m_print_debug_output = false;
     pub_data["text/plain"] = "Kernel debug info print disabled.";
+    result["status"] = "ok";
   }
   else
   {
-    QVariant executeResult = pythonManager->executeString(QString::fromStdString(code));
-    if (m_jupyter_kernel_module && !m_jupyter_kernel_module->executeResultDataType().isEmpty())
-    {
-      pub_data[m_jupyter_kernel_module->executeResultDataType().toStdString()] =
-        m_jupyter_kernel_module->executeResultDataValue().toStdString();
-      m_jupyter_kernel_module->setExecuteResultDataType("");
-      m_jupyter_kernel_module->setExecuteResultDataValue("");
-    }
-    else
-    {
-      pub_data["text/plain"] = m_captured_stdout.join("").toStdString();
-    }
-  }
-
-  nl::json result;
-  result["status"] = "ok";
-  if (pythonManager->pythonErrorOccured())
-  {
-    result["status"] = "error";
-    pub_data["text/plain"] = m_captured_stderr.join("").toStdString();
+    return xpyt::interpreter::execute_request_impl(execution_counter, code, store_history, silent, user_expressions, allow_stdin);
   }
 
   publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
-
   return result;
 }
 
@@ -123,23 +109,7 @@ nl::json xSlicerInterpreter::complete_request_impl(const std::string& code,
     std::cout << std::endl;
   }
 
-  qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
-  PythonQtObjectPtr context = pythonManager->mainContext();
-
-  QVariantList args;
-  args.push_back(QString::fromStdString(code));
-  args.push_back(cursor_pos);
-  QVariant executeResult = context.call("slicer.util.py_complete_request", args);
-
-  if (m_print_debug_output)
-  {
-    std::cout << "result: " << std::endl << executeResult.toString().toStdString() << std::endl;
-  }
-
-  // TODO error check?
-  std::string resultStr = executeResult.toString().toStdString();
-  nl::json result = nl::json::parse(resultStr.c_str());
-  return result;
+  return xpyt::interpreter::complete_request_impl(code, cursor_pos);
 }
 
 nl::json xSlicerInterpreter::inspect_request_impl(const std::string& code,
@@ -155,45 +125,7 @@ nl::json xSlicerInterpreter::inspect_request_impl(const std::string& code,
     std::cout << std::endl;
   }
 
-  qSlicerPythonManager* pythonManager = qSlicerApplication::application()->pythonManager();
-  PythonQtObjectPtr context = pythonManager->mainContext();
-
-  QVariant executeResult;
-
-  // Get token at cursor (if inside parentheses after method name, it returns the method name)
-  std::string token;
-  {
-    QVariantList args;
-    args.push_back(QString::fromStdString(code));
-    args.push_back(cursor_pos);
-    executeResult = context.call("slicer.util.py_token_at_cursor", args);
-    token = executeResult.toString().toStdString();
-    if (m_print_debug_output)
-    {
-      std::cout << "slicer.util.py_token_at_cursor result: " << std::endl << executeResult.toString().toStdString() << std::endl;
-    }
-    // TODO error check?
-  }
-
-  // Get documentation
-  std::string documentation;
-  {
-    QVariantList args;
-    args.push_back(QString::fromStdString(token));
-    args.push_back(static_cast<unsigned int>(token.size()));
-    args.push_back(detail_level);
-    executeResult = context.call("slicer.util.py_inspect_request", args);
-    documentation = executeResult.toString().toStdString();
-    if (m_print_debug_output)
-    {
-      std::cout << "slicer.util.py_inspect_request result: " << std::endl << executeResult.toString().toStdString() << std::endl;
-    }
-    // TODO error check?
-  }
-
-  nl::json result = nl::json::parse(documentation.c_str());
-
-  return result;
+  return xpyt::interpreter::inspect_request_impl(code, cursor_pos, detail_level);
 }
 
 nl::json xSlicerInterpreter::is_complete_request_impl(const std::string& code)
@@ -204,23 +136,13 @@ nl::json xSlicerInterpreter::is_complete_request_impl(const std::string& code)
     std::cout << "code: " << code << std::endl;
     std::cout << std::endl;
   }
-  nl::json result;
-  result["status"] = "complete";
-  return result;
+  return xpyt::interpreter::is_complete_request_impl(code);
+
 }
 
 nl::json xSlicerInterpreter::kernel_info_request_impl()
 {
-  nl::json result;
-  result["language_info"]["mimetype"] = "text/x-python";
-  result["language_info"]["name"] = "python";
-  result["language_info"]["nbconvert_exporter"] = "python";
-  result["language_info"]["version"] = "2.7.13+";
-  result["language_info"]["file_extension"] = ".py";
-  result["language_info"]["pygments_lexer"] = "ipython3";
-  result["language_info"]["codemirror_mode"]["version"] = 3;
-  result["language_info"]["codemirror_mode"]["name"] = "ipython";
-  return result;
+  return xpyt::interpreter::kernel_info_request_impl();
 }
 
 void xSlicerInterpreter::shutdown_request_impl()
@@ -230,6 +152,7 @@ void xSlicerInterpreter::shutdown_request_impl()
     std::cout << "Received shutdown_request" << std::endl;
     std::cout << std::endl;
   }
+  return xpyt::interpreter::shutdown_request_impl();
 }
 
 void xSlicerInterpreter::set_jupyter_kernel_module(qSlicerJupyterKernelModule* module)

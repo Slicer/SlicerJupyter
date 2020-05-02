@@ -46,6 +46,7 @@ install(DIRECTORY "${python_packages_DIR}/"
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)
 list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${xeus_DIR};xeus;ALL;/") # xeus has no runtime install component
+list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${xeus-python_DIR};xeus-python;ALL;/")
 list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${ZeroMQ_DIR};ZeroMQ;Runtime;/") # this is not needed on Windows, but maybe needed on other platforms
 list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${ZeroMQ_DIR};ZeroMQ;Unspecified;/") # on Windows, libzmq-v140-mt-4_2_5.dll installed by this
 set(${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS "${EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS}" CACHE STRING "List of external projects to install" FORCE)
