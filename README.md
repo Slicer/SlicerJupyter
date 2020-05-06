@@ -64,7 +64,7 @@ import SampleData
 sampleDataLogic = SampleData.SampleDataLogic()
 volume = sampleDataLogic.downloadCTChest()
 slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
-slicer.displayViews()
+slicer.nb.displayViews()
 </pre>
 
 Create a surface mesh from the image:
@@ -80,7 +80,7 @@ grayMaker = slicer.modules.grayscalemodelmaker
 slicer.cli.runSync(grayMaker, None, parameters)
 slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUp3DView)
 slicer.app.layoutManager().threeDWidget(0).threeDView().resetCamera()
-slicer.displayModel(outModel, orientation=[0,90,0])
+slicer.nb.displayModel(outModel, orientation=[0,90,0])
 </pre>
 
 
