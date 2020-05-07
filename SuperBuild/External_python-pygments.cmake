@@ -62,7 +62,11 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       ${${proj}_DEPENDENCIES}
     )
 
-  ExternalProject_GenerateProjectDescription_Step(${proj})
+  ExternalProject_GenerateProjectDescription_Step(${proj}
+    VERSION ${${CMAKE_PROJECT_NAME}_${proj}_VERSION}
+    LICENSE_FILES
+      "https://raw.githubusercontent.com/pygments/pygments/master/LICENSE"
+    )
 
   #-----------------------------------------------------------------------------
   # Launcher setting specific to build tree
