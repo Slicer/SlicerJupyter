@@ -83,6 +83,13 @@ void qSlicerJupyterKernelModuleWidget::setup()
   connect(d->CopyCommandToClipboardPushButton, SIGNAL(clicked()), this, SLOT(onCopyInstallCommandToClipboard()));
   connect(d->StartJupyterNotebookPushButton, SIGNAL(clicked()), this, SLOT(onStartJupyterNotebook()));
 
+  // Hide automatic kernel installation section.
+  // It does not work with virtual environments and kernel installation has become quite easy using
+  // Anaconda navigator application.
+  // If there will be a robust way of finding Python environments and running tools in them then
+  // we can consider show this section again.
+  d->AutomaticKernelInstallationGroupBox->setVisible(false);
+
   // Hide control section for now.
   // Currently, it has a button for starting jupyter notebook, but it requires Qt-5.10.
   // Also, users may want to run the notebook in a virtual environment.
