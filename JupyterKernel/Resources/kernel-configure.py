@@ -393,6 +393,155 @@ class FileUploadWidget(object):
         with open(self.path, 'wb') as f: f.write(content)
         print('Uploaded {0} ({1} bytes)'.format(self.filename, metadata['size']))
 
+class InteractiveView(object):
+
+  def __init__(self, renderView):
+    from ipyevents import Event
+    from ipycanvas import Canvas
+
+    self.renderView = renderView
+
+    # Quality vs performance
+    self.minTimBetweenRendersSec = 0.2
+    self.compressionQuality = 50
+    self.trackMouseMove = False  # refresh if mouse is just moving (not dragging)
+
+    # If not receiving new rendering request for 10ms then a render is requested
+    self.fullRenderRequestTimer = qt.QTimer()
+    self.fullRenderRequestTimer.setSingleShot(True)
+    self.fullRenderRequestTimer.setInterval(1000)
+    self.fullRenderRequestTimer.connect('timeout()', self.fullRender)
+
+    # If not receiving new rendering request for 10ms then a render is requested
+    self.quickRenderRequestTimer = qt.QTimer()
+    self.quickRenderRequestTimer.setSingleShot(True)
+    self.quickRenderRequestTimer.setInterval(200)
+    self.quickRenderRequestTimer.connect('timeout()', self.quickRender)
+    
+    # Get image size
+    image = self.getImage()
+    self.canvas = Canvas(width=image.width, height=image.height)
+    self.canvasHeight=int(image.height)
+    self.canvas.draw_image(image)
+
+    self.interactor = self.renderView.interactorStyle().GetInteractor()
+    
+    self.dragging=False
+    
+    self.interactionEvents = Event()
+    self.interactionEvents.source = self.canvas
+    self.interactionEvents.watched_events = [
+      'dragstart', 'mouseenter', 'mouseleave',
+      'mousedown', 'mouseup', 'mousemove',
+      #'wheel',  # commented out so that user can scroll through the notebook using mousewheel
+      'keyup', 'keydown'
+      ]
+    #self.interactionEvents.msg_throttle = 1  # does not seem to have effect
+    self.interactionEvents.prevent_default_action = True
+    self.interactionEvents.on_dom_event(self.handleInteractionEvent)
+
+    self.keyToSym = {
+      'ArrowLeft': 'Left',
+      'ArrowRight': 'Right',
+      'ArrowUp': 'Up',
+      'ArrowDown': 'Down',
+      # TODO: more key codes could be added
+      }
+
+    # Errors are not displayed when a widget is displayed,
+    # this variable can be used to retrieve error messages
+    self.error = None
+
+    # Enable logging of UI events
+    self.logEvents = False
+    self.loggedEvents = []
+      
+  def getImage(self, compress=True, forceRender=True):
+      from ipywidgets import Image
+      slicer.app.processEvents()
+      if forceRender:
+        self.renderView.forceRender()
+      screenshot = self.renderView.grab()
+      bArray = qt.QByteArray()
+      buffer = qt.QBuffer(bArray)
+      buffer.open(qt.QIODevice.WriteOnly)
+      if compress:
+        screenshot.save(buffer, "JPG", self.compressionQuality)
+      else:
+        screenshot.save(buffer, "PNG")
+      return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
+
+  def fullRender(self):
+      self.fullRenderRequestTimer.stop()
+      self.quickRenderRequestTimer.stop()
+      self.canvas.draw_image(self.getImage(compress=False, forceRender=True))
+
+  def quickRender(self):
+      self.fullRenderRequestTimer.stop()
+      self.quickRenderRequestTimer.stop()
+      self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
+      self.fullRenderRequestTimer.start()
+
+  def updateInteractorEventData(self, event):
+      if event['event']=='keydown' or event['event']=='keyup':
+        key = event['key']
+        sym = self.keyToSym[key] if key in self.keyToSym.keys() else key
+        self.interactor.SetKeySym(sym)
+        if len(key) == 1:
+          self.interactor.SetKeyCode(key)
+        self.interactor.SetRepeatCount(1)
+      else:
+        self.interactor.SetEventPosition(event['offsetX'], self.canvasHeight-event['offsetY'])
+      self.interactor.SetShiftKey(event['shiftKey'])
+      self.interactor.SetControlKey(event['ctrlKey'])
+      self.interactor.SetAltKey(event['altKey'])
+
+  def handleInteractionEvent(self, event):
+    try:
+      if self.logEvents:
+        self.loggedEvents.append(event)
+      renderNow=True
+      if event['event']=='mousemove':
+        if not self.dragging and not self.trackMouseMove:
+          return
+        renderNow = False
+        self.updateInteractorEventData(event)
+        self.interactor.MouseMoveEvent()
+        self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
+        self.quickRenderRequestTimer.start()
+      elif event['event']=='mousedown':
+        self.dragging=True
+        self.updateInteractorEventData(event)
+        if event['button'] == 0:
+          self.interactor.LeftButtonPressEvent()
+        elif event['button'] == 2:
+          self.interactor.RightButtonPressEvent()
+        elif event['button'] == 1:
+          self.interactor.MiddleButtonPressEvent()
+        self.fullRender()
+      elif event['event']=='mouseup':
+        self.updateInteractorEventData(event)
+        if event['button'] == 0:
+          self.interactor.LeftButtonReleaseEvent()
+        elif event['button'] == 2:
+          self.interactor.RightButtonReleaseEvent()
+        elif event['button'] == 1:
+          self.interactor.MiddleButtonReleaseEvent()
+        self.dragging=False
+        self.fullRender()
+      elif event['event']=='keydown':
+        self.updateInteractorEventData(event)
+        self.interactor.KeyPressEvent()
+        self.interactor.CharEvent()
+        self.fullRender()
+      elif event['event']=='keyup':
+        self.updateInteractorEventData(event)
+        self.interactor.KeyReleaseEvent()
+        self.fullRender()
+    except Exception as e:
+        self.error = str(e)
+
+
 def cliRunSync(module, node=None, parameters=None, delete_temporary_files=True, update_display=True):
 
   node = slicer.cli.run(module, node=node, parameters=parameters, wait_for_completion=False,
@@ -417,6 +566,7 @@ slicer.nb = type('', (), {})()
 slicer.nb.displayViews = displayViews
 slicer.nb.displaySliceView = displaySliceView
 slicer.nb.display3DView = display3DView
+slicer.nb.InteractiveView = InteractiveView
 
 slicer.nb.displayMarkups = displayMarkups
 slicer.nb.displayModel = displayModel

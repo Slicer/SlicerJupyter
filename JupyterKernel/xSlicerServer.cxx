@@ -23,10 +23,11 @@ xSlicerServer::xSlicerServer(zmq::context_t& context,
                            const xeus::xconfiguration& c)
     : xserver_zmq(context, c)
 {
-  // 50ms interval is sort enough so that users will not notice significant latency
+  // 10ms interval is short enough so that users will not notice significant latency
   // yet it is long enough to minimize CPU load caused by polling.
+  // 50ms causes too long delay in interactive widgets that handle mousemove events.
   m_pollTimer = new QTimer();
-  m_pollTimer->setInterval(50);
+  m_pollTimer->setInterval(10);
   QObject::connect(m_pollTimer, &QTimer::timeout, [=]() { poll(0); });
 }
 
@@ -72,3 +73,12 @@ std::unique_ptr<xeus::xserver> make_xSlicerServer(zmq::context_t& context,
     return std::make_unique<xSlicerServer>(context, config);
 }
 
+void xSlicerServer::setPollIntervalSec(double intervalSec)
+{
+  m_pollTimer->setInterval(intervalSec*1000.0);
+}
+
+double xSlicerServer::pollIntervalSec()
+{
+  return m_pollTimer->interval() / 1000.0;
+}

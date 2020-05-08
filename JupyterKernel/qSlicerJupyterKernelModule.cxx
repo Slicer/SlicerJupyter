@@ -44,6 +44,7 @@
 // XEUS includes
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
+#include "xeus-python/xdebugger.hpp"
 
 #include "xSlicerInterpreter.h"
 #include "xSlicerServer.h"
@@ -273,7 +274,7 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
                                   std::move(hist),
                                   nullptr,
                                   make_xSlicerServer,
-                                  xeus::make_null_debugger);
+                                  xpyt::make_python_debugger);
 
     d->Kernel->start();
 
@@ -467,3 +468,36 @@ void qSlicerJupyterKernelModule::setExecuteResultDataValue(const QString& str)
   Q_D(qSlicerJupyterKernelModule);
   d->ExecuteResultDataValue = str;
 }
+
+//---------------------------------------------------------------------------
+double qSlicerJupyterKernelModule::pollIntervalSec()
+{
+  Q_D(qSlicerJupyterKernelModule);
+  if (d->Kernel == nullptr)
+  {
+    qCritical() << Q_FUNC_INFO << " failed: kernel has not started yet";
+    return 0.0;
+  }
+  // TODO: uncomment when public API will be available
+  // return reinterpret_cast<xSlicerServer*>(d->Kernel->p_server.get())->pollIntervalSec();
+  qCritical() << Q_FUNC_INFO << " failed: not implemented";
+
+  return 0.0;
+}
+
+//---------------------------------------------------------------------------
+void qSlicerJupyterKernelModule::setPollIntervalSec(double intervalSec)
+{
+  Q_D(qSlicerJupyterKernelModule);
+  if (d->Kernel == nullptr)
+  {
+    qCritical() << Q_FUNC_INFO << " failed: kernel has not started yet";
+    return;
+  }
+
+  // TODO: uncomment when public API will be available
+  // reinterpret_cast<xSlicerServer*>(d->Kernel->p_server.get())->setPollIntervalSec(intervalSec);
+  qCritical() << Q_FUNC_INFO << " failed: not implemented";
+}
+
+

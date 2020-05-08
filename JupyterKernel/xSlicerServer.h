@@ -25,6 +25,9 @@ public:
 
     virtual ~xSlicerServer();
 
+    void setPollIntervalSec(double intervalSec);
+    double pollIntervalSec();
+
 protected:
 
     void start_impl(zmq::multipart_t& message) override;

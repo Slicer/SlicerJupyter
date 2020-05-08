@@ -37,6 +37,7 @@ qSlicerJupyterKernelModule
   Q_INTERFACES(qSlicerLoadableModule);
   Q_PROPERTY(QString executeResultDataType READ executeResultDataType WRITE setExecuteResultDataType)
   Q_PROPERTY(QString executeResultDataValue READ executeResultDataValue WRITE setExecuteResultDataValue)
+  Q_PROPERTY(double pollIntervalSec READ pollIntervalSec WRITE setPollIntervalSec)
 
 public:
 
@@ -67,11 +68,14 @@ public:
   void setExecuteResultDataType(const QString& str);
   QString executeResultDataValue();
   void setExecuteResultDataValue(const QString& str);
-  
+
+  double pollIntervalSec();
+
 public slots:
 
   void startKernel(const QString& connectionFile);
   void stopKernel();
+  void setPollIntervalSec(double intervalSec);
 
 protected:
 
