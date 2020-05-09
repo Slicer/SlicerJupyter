@@ -394,17 +394,27 @@ class FileUploadWidget(object):
         print('Uploaded {0} ({1} bytes)'.format(self.filename, metadata['size']))
 
 class InteractiveView(object):
+  """Remote controller for Slicer viewers"""
 
   def __init__(self, renderView):
     from ipyevents import Event
     from ipycanvas import Canvas
+    import time
 
     self.renderView = renderView
+    
+    # Frame rate (1/renderDelay)
+    self.lastRenderTime = 0
+    self.quickRenderDelaySec = 0.1
+    self.quickRenderDelaySecRange = [0.02, 2.0]
+    self.adaptiveRenderDelay = True
 
     # Quality vs performance
     self.compressionQuality = 50
     self.trackMouseMove = False  # refresh if mouse is just moving (not dragging)
 
+    self.messageTimestampOffset = None
+    
     # If not receiving new rendering request for 10ms then a render is requested
     self.fullRenderRequestTimer = qt.QTimer()
     self.fullRenderRequestTimer.setSingleShot(True)
@@ -414,7 +424,7 @@ class InteractiveView(object):
     # If not receiving new rendering request for 10ms then a render is requested
     self.quickRenderRequestTimer = qt.QTimer()
     self.quickRenderRequestTimer.setSingleShot(True)
-    self.quickRenderRequestTimer.setInterval(20)
+    self.quickRenderRequestTimer.setInterval(self.quickRenderDelaySec*1000)
     self.quickRenderRequestTimer.connect('timeout()', self.quickRender)
     
     # Get image size
@@ -430,11 +440,12 @@ class InteractiveView(object):
     self.interactionEvents = Event()
     self.interactionEvents.source = self.canvas
     self.interactionEvents.watched_events = [
-      'dragstart', 'mouseenter', 'mouseleave',
-      'mousedown', 'mouseup', 'mousemove',
-      #'wheel',  # commented out so that user can scroll through the notebook using mousewheel
-      'keyup', 'keydown'
-      ]
+        'dragstart', 'mouseenter', 'mouseleave',
+        'mousedown', 'mouseup', 'mousemove',
+        #'wheel',  # commented out so that user can scroll through the notebook using mousewheel
+        'keyup', 'keydown',
+        'contextmenu' # prevent context menu from appearing on right-click
+        ]
     #self.interactionEvents.msg_throttle = 1  # does not seem to have effect
     self.interactionEvents.prevent_default_action = True
     self.interactionEvents.on_dom_event(self.handleInteractionEvent)
@@ -444,7 +455,39 @@ class InteractiveView(object):
       'ArrowRight': 'Right',
       'ArrowUp': 'Up',
       'ArrowDown': 'Down',
-      # TODO: more key codes could be added
+      'BackSpace': 'BackSpace',
+      'Tab': 'Tab',
+      'Enter': 'Return',
+      'Shift': 'Shift_L',
+      'Control': 'Control_L',
+      'Alt': 'Alt_L',
+      'CapsLock': 'Caps_Lock',
+      'Escape': 'Escape',
+      ' ': 'space',
+      'PageUp': 'Prior',
+      'PageDown': 'Next',
+      'Home': 'Home',
+      'End': 'End',
+      'Delete': 'Delete',
+      'Insert': 'Insert',
+      '*': 'asterisk',
+      '+': 'plus',
+      '|': 'bar',
+      '-': 'minus',
+      '.': 'period',
+      '/': 'slash',
+      'F1': 'F1',
+      'F2': 'F2',
+      'F3': 'F3',
+      'F4': 'F4',
+      'F5': 'F5',
+      'F6': 'F6',
+      'F7': 'F7',
+      'F8': 'F8',
+      'F9': 'F9',
+      'F10': 'F10',
+      'F11': 'F11',
+      'F12': 'F12'
       }
 
     # Errors are not displayed when a widget is displayed,
@@ -454,58 +497,100 @@ class InteractiveView(object):
     # Enable logging of UI events
     self.logEvents = False
     self.loggedEvents = []
+    self.elapsedTimes = []
+    self.ageOfProcessedMessages = []
+    
+  def setQuickRenderDelay(self, delaySec):
+    if delaySec<self.quickRenderDelaySecRange[0]:
+        delaySec = self.quickRenderDelaySecRange[0]
+    elif delaySec>self.quickRenderDelaySecRange[1]:
+        delaySec = self.quickRenderDelaySecRange[1]
+    self.quickRenderDelaySec = delaySec
+    self.quickRenderRequestTimer.setInterval(self.quickRenderDelaySec*1000)
+    
+  def setFullRenderDelay(self, delaySec):
+    self.fullRenderRequestTimer.setInterval(delaySec)
       
   def getImage(self, compress=True, forceRender=True):
-    from ipywidgets import Image
-    slicer.app.processEvents()
-    if forceRender:
-      self.renderView.forceRender()
-    screenshot = self.renderView.grab()
-    bArray = qt.QByteArray()
-    buffer = qt.QBuffer(bArray)
-    buffer.open(qt.QIODevice.WriteOnly)
-    if compress:
-      screenshot.save(buffer, "JPG", self.compressionQuality)
-    else:
-      screenshot.save(buffer, "PNG")
-    return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
+      from ipywidgets import Image
+      slicer.app.processEvents()
+      if forceRender:
+        self.renderView.forceRender()
+      screenshot = self.renderView.grab()
+      bArray = qt.QByteArray()
+      buffer = qt.QBuffer(bArray)
+      buffer.open(qt.QIODevice.WriteOnly)
+      if compress:
+        screenshot.save(buffer, "JPG", self.compressionQuality)
+      else:
+        screenshot.save(buffer, "PNG")
+      return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
 
   def fullRender(self):
-    self.fullRenderRequestTimer.stop()
-    self.quickRenderRequestTimer.stop()
-    self.canvas.draw_image(self.getImage(compress=False, forceRender=True))
+    try:
+      import time
+      self.fullRenderRequestTimer.stop()
+      self.quickRenderRequestTimer.stop()
+      self.canvas.draw_image(self.getImage(compress=False, forceRender=True))
+      self.lastRenderTime = time.time()
+    except Exception as e:
+      self.error = str(e)
 
   def quickRender(self):
-    self.fullRenderRequestTimer.stop()
-    self.quickRenderRequestTimer.stop()
-    self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
-    self.fullRenderRequestTimer.start()
+    try:
+      import time
+      self.fullRenderRequestTimer.stop()
+      self.quickRenderRequestTimer.stop()
+      self.interactor.MouseMoveEvent()
+      self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
+      self.fullRenderRequestTimer.start()
+      if self.logEvents: self.elapsedTimes.append(time.time()-self.lastRenderTime)
+      self.lastRenderTime = time.time()
+    except Exception as e:
+      self.error = str(e)
 
   def updateInteractorEventData(self, event):
-    if event['event']=='keydown' or event['event']=='keyup':
-      key = event['key']
-      sym = self.keyToSym[key] if key in self.keyToSym.keys() else key
-      self.interactor.SetKeySym(sym)
-      if len(key) == 1:
-        self.interactor.SetKeyCode(key)
-      self.interactor.SetRepeatCount(1)
-    else:
-      self.interactor.SetEventPosition(event['offsetX'], self.canvasHeight-event['offsetY'])
-    self.interactor.SetShiftKey(event['shiftKey'])
-    self.interactor.SetControlKey(event['ctrlKey'])
-    self.interactor.SetAltKey(event['altKey'])
+    try:
+      if event['event']=='keydown' or event['event']=='keyup':
+        key = event['key']
+        sym = self.keyToSym[key] if key in self.keyToSym.keys() else key
+        self.interactor.SetKeySym(sym)
+        if len(key) == 1:
+          self.interactor.SetKeyCode(key)
+        self.interactor.SetRepeatCount(1)
+      else:
+        self.interactor.SetEventPosition(event['offsetX'], self.canvasHeight-event['offsetY'])
+      self.interactor.SetShiftKey(event['shiftKey'])
+      self.interactor.SetControlKey(event['ctrlKey'])
+      self.interactor.SetAltKey(event['altKey'])
+    except Exception as e:
+      self.error = str(e)
 
   def handleInteractionEvent(self, event):
     try:
       if self.logEvents:
         self.loggedEvents.append(event)
-      renderNow=True
       if event['event']=='mousemove':
-        if not self.dragging and not self.trackMouseMove:
-          return
+        import time
+        if self.messageTimestampOffset is None:
+            self.messageTimestampOffset = time.time()-event['timeStamp']*0.001
         self.updateInteractorEventData(event)
-        self.interactor.MouseMoveEvent()
-        self.quickRenderRequestTimer.start()
+        if not self.dragging and not self.trackMouseMove:
+            return
+        if self.adaptiveRenderDelay:
+            ageOfProcessedMessage = time.time()-(event['timeStamp']*0.001+self.messageTimestampOffset)
+            if ageOfProcessedMessage > 1.5 * self.quickRenderDelaySec:
+                # we are falling behind, try to render less frequently
+                self.setQuickRenderDelay(self.quickRenderDelaySec * 1.05)
+            elif ageOfProcessedMessage < 0.5 * self.quickRenderDelaySec:
+                # we can keep up with events, try to render more frequently
+                self.setQuickRenderDelay(self.quickRenderDelaySec / 1.05)
+            if self.logEvents: self.ageOfProcessedMessages.append([ageOfProcessedMessage, self.quickRenderDelaySec])
+        # We need to render something now it no rendering since self.quickRenderDelaySec
+        if time.time()-self.lastRenderTime > self.quickRenderDelaySec:
+            self.quickRender()
+        else:
+            self.quickRenderRequestTimer.start()        
       elif event['event']=='mouseenter':
         self.updateInteractorEventData(event)
         self.interactor.EnterEvent()
