@@ -408,6 +408,7 @@ class InteractiveView(object):
     self.quickRenderDelaySec = 0.1
     self.quickRenderDelaySecRange = [0.02, 2.0]
     self.adaptiveRenderDelay = True
+    self.lastMouseMoveEvent = None
 
     # Quality vs performance
     self.compressionQuality = 50
@@ -458,9 +459,9 @@ class InteractiveView(object):
       'BackSpace': 'BackSpace',
       'Tab': 'Tab',
       'Enter': 'Return',
-      'Shift': 'Shift_L',
-      'Control': 'Control_L',
-      'Alt': 'Alt_L',
+      #'Shift': 'Shift_L',
+      #'Control': 'Control_L',
+      #'Alt': 'Alt_L',
       'CapsLock': 'Caps_Lock',
       'Escape': 'Escape',
       ' ': 'space',
@@ -536,12 +537,18 @@ class InteractiveView(object):
     except Exception as e:
       self.error = str(e)
 
+  def sendPendingMouseMoveEvent(self):
+      if self.lastMouseMoveEvent is not None:
+        self.updateInteractorEventData(self.lastMouseMoveEvent)
+        self.interactor.MouseMoveEvent()
+        self.lastMouseMoveEvent = None
+
   def quickRender(self):
     try:
       import time
       self.fullRenderRequestTimer.stop()
       self.quickRenderRequestTimer.stop()
-      self.interactor.MouseMoveEvent()
+      self.sendPendingMouseMoveEvent()
       self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
       self.fullRenderRequestTimer.start()
       if self.logEvents: self.elapsedTimes.append(time.time()-self.lastRenderTime)
@@ -574,7 +581,7 @@ class InteractiveView(object):
         import time
         if self.messageTimestampOffset is None:
             self.messageTimestampOffset = time.time()-event['timeStamp']*0.001
-        self.updateInteractorEventData(event)
+        self.lastMouseMoveEvent = event
         if not self.dragging and not self.trackMouseMove:
             return
         if self.adaptiveRenderDelay:
@@ -594,13 +601,16 @@ class InteractiveView(object):
       elif event['event']=='mouseenter':
         self.updateInteractorEventData(event)
         self.interactor.EnterEvent()
+        self.lastMouseMoveEvent = None
         self.quickRenderRequestTimer.start()
       elif event['event']=='mouseleave':
         self.updateInteractorEventData(event)
         self.interactor.LeaveEvent()
+        self.lastMouseMoveEvent = None
         self.quickRenderRequestTimer.start()
       elif event['event']=='mousedown':
         self.dragging=True
+        self.sendPendingMouseMoveEvent()
         self.updateInteractorEventData(event)
         if event['button'] == 0:
           self.interactor.LeftButtonPressEvent()
@@ -610,6 +620,7 @@ class InteractiveView(object):
           self.interactor.MiddleButtonPressEvent()
         self.fullRender()
       elif event['event']=='mouseup':
+        self.sendPendingMouseMoveEvent()
         self.updateInteractorEventData(event)
         if event['button'] == 0:
           self.interactor.LeftButtonReleaseEvent()
@@ -620,14 +631,18 @@ class InteractiveView(object):
         self.dragging=False
         self.fullRender()
       elif event['event']=='keydown':
+        self.sendPendingMouseMoveEvent()
         self.updateInteractorEventData(event)
         self.interactor.KeyPressEvent()
         self.interactor.CharEvent()
-        self.fullRender()
+        if event['key'] != 'Shift' and event['key'] != 'Control' and event['key'] != 'Alt':
+          self.fullRender()
       elif event['event']=='keyup':
+        self.sendPendingMouseMoveEvent()
         self.updateInteractorEventData(event)
         self.interactor.KeyReleaseEvent()
-        self.fullRender()
+        if event['key'] != 'Shift' and event['key'] != 'Control' and event['key'] != 'Alt':
+          self.fullRender()
     except Exception as e:
         self.error = str(e)
 
