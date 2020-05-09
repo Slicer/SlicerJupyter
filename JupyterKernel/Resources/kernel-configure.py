@@ -402,20 +402,19 @@ class InteractiveView(object):
     self.renderView = renderView
 
     # Quality vs performance
-    self.minTimBetweenRendersSec = 0.2
     self.compressionQuality = 50
     self.trackMouseMove = False  # refresh if mouse is just moving (not dragging)
 
     # If not receiving new rendering request for 10ms then a render is requested
     self.fullRenderRequestTimer = qt.QTimer()
     self.fullRenderRequestTimer.setSingleShot(True)
-    self.fullRenderRequestTimer.setInterval(1000)
+    self.fullRenderRequestTimer.setInterval(500)
     self.fullRenderRequestTimer.connect('timeout()', self.fullRender)
 
     # If not receiving new rendering request for 10ms then a render is requested
     self.quickRenderRequestTimer = qt.QTimer()
     self.quickRenderRequestTimer.setSingleShot(True)
-    self.quickRenderRequestTimer.setInterval(200)
+    self.quickRenderRequestTimer.setInterval(20)
     self.quickRenderRequestTimer.connect('timeout()', self.quickRender)
     
     # Get image size
@@ -457,44 +456,44 @@ class InteractiveView(object):
     self.loggedEvents = []
       
   def getImage(self, compress=True, forceRender=True):
-      from ipywidgets import Image
-      slicer.app.processEvents()
-      if forceRender:
-        self.renderView.forceRender()
-      screenshot = self.renderView.grab()
-      bArray = qt.QByteArray()
-      buffer = qt.QBuffer(bArray)
-      buffer.open(qt.QIODevice.WriteOnly)
-      if compress:
-        screenshot.save(buffer, "JPG", self.compressionQuality)
-      else:
-        screenshot.save(buffer, "PNG")
-      return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
+    from ipywidgets import Image
+    slicer.app.processEvents()
+    if forceRender:
+      self.renderView.forceRender()
+    screenshot = self.renderView.grab()
+    bArray = qt.QByteArray()
+    buffer = qt.QBuffer(bArray)
+    buffer.open(qt.QIODevice.WriteOnly)
+    if compress:
+      screenshot.save(buffer, "JPG", self.compressionQuality)
+    else:
+      screenshot.save(buffer, "PNG")
+    return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
 
   def fullRender(self):
-      self.fullRenderRequestTimer.stop()
-      self.quickRenderRequestTimer.stop()
-      self.canvas.draw_image(self.getImage(compress=False, forceRender=True))
+    self.fullRenderRequestTimer.stop()
+    self.quickRenderRequestTimer.stop()
+    self.canvas.draw_image(self.getImage(compress=False, forceRender=True))
 
   def quickRender(self):
-      self.fullRenderRequestTimer.stop()
-      self.quickRenderRequestTimer.stop()
-      self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
-      self.fullRenderRequestTimer.start()
+    self.fullRenderRequestTimer.stop()
+    self.quickRenderRequestTimer.stop()
+    self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
+    self.fullRenderRequestTimer.start()
 
   def updateInteractorEventData(self, event):
-      if event['event']=='keydown' or event['event']=='keyup':
-        key = event['key']
-        sym = self.keyToSym[key] if key in self.keyToSym.keys() else key
-        self.interactor.SetKeySym(sym)
-        if len(key) == 1:
-          self.interactor.SetKeyCode(key)
-        self.interactor.SetRepeatCount(1)
-      else:
-        self.interactor.SetEventPosition(event['offsetX'], self.canvasHeight-event['offsetY'])
-      self.interactor.SetShiftKey(event['shiftKey'])
-      self.interactor.SetControlKey(event['ctrlKey'])
-      self.interactor.SetAltKey(event['altKey'])
+    if event['event']=='keydown' or event['event']=='keyup':
+      key = event['key']
+      sym = self.keyToSym[key] if key in self.keyToSym.keys() else key
+      self.interactor.SetKeySym(sym)
+      if len(key) == 1:
+        self.interactor.SetKeyCode(key)
+      self.interactor.SetRepeatCount(1)
+    else:
+      self.interactor.SetEventPosition(event['offsetX'], self.canvasHeight-event['offsetY'])
+    self.interactor.SetShiftKey(event['shiftKey'])
+    self.interactor.SetControlKey(event['ctrlKey'])
+    self.interactor.SetAltKey(event['altKey'])
 
   def handleInteractionEvent(self, event):
     try:
@@ -504,10 +503,16 @@ class InteractiveView(object):
       if event['event']=='mousemove':
         if not self.dragging and not self.trackMouseMove:
           return
-        renderNow = False
         self.updateInteractorEventData(event)
         self.interactor.MouseMoveEvent()
-        self.canvas.draw_image(self.getImage(compress=True, forceRender=False))
+        self.quickRenderRequestTimer.start()
+      elif event['event']=='mouseenter':
+        self.updateInteractorEventData(event)
+        self.interactor.EnterEvent()
+        self.quickRenderRequestTimer.start()
+      elif event['event']=='mouseleave':
+        self.updateInteractorEventData(event)
+        self.interactor.LeaveEvent()
         self.quickRenderRequestTimer.start()
       elif event['event']=='mousedown':
         self.dragging=True
