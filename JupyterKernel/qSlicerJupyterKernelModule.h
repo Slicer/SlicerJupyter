@@ -35,10 +35,8 @@ qSlicerJupyterKernelModule
   Q_PLUGIN_METADATA(IID "org.slicer.modules.loadable.qSlicerLoadableModule/1.0");
 #endif
   Q_INTERFACES(qSlicerLoadableModule);
-  Q_PROPERTY(QString executeResultDataType READ executeResultDataType WRITE setExecuteResultDataType)
-  Q_PROPERTY(QString executeResultDataValue READ executeResultDataValue WRITE setExecuteResultDataValue)
   Q_PROPERTY(double pollIntervalSec READ pollIntervalSec WRITE setPollIntervalSec)
-
+  Q_PROPERTY(QString connectionFile READ connectionFile)
 public:
 
   typedef qSlicerLoadableModule Superclass;
@@ -64,12 +62,9 @@ public:
 
   Q_INVOKABLE virtual QString resourceFolderPath();
 
-  QString executeResultDataType();
-  void setExecuteResultDataType(const QString& str);
-  QString executeResultDataValue();
-  void setExecuteResultDataValue(const QString& str);
-
   double pollIntervalSec();
+
+  QString connectionFile();
 
 public slots:
 

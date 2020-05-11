@@ -36,6 +36,7 @@ endif()
 #-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(JupyterKernel)
+add_subdirectory(JupyterNotebooks)
 
 #-----------------------------------------------------------------------------
 install(CODE "message(\"Installing python packages.\")")

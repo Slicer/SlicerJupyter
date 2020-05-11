@@ -75,12 +75,10 @@ public:
   qSlicerJupyterKernelModulePrivate(qSlicerJupyterKernelModule& object);
 
   bool Started;
+  QString ConnectionFile;
   xeus::xkernel * Kernel;
   xeus::xconfiguration Config;
   QLabel* StatusLabel;
-
-  QString ExecuteResultDataType;
-  QString ExecuteResultDataValue;
 };
 
 //-----------------------------------------------------------------------------
@@ -248,6 +246,7 @@ vtkMRMLAbstractLogic* qSlicerJupyterKernelModule::createLogic()
 void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
 {
   Q_D(qSlicerJupyterKernelModule);
+  d->ConnectionFile = connectionFile;
   if (!QFileInfo::exists(connectionFile))
   {
     qWarning() << "startKernel" << "connectionFile does not exist" << connectionFile;
@@ -442,34 +441,6 @@ QString qSlicerJupyterKernelModule::resourceFolderPath()
 }
 
 //---------------------------------------------------------------------------
-QString qSlicerJupyterKernelModule::executeResultDataType()
-{
-  Q_D(qSlicerJupyterKernelModule);
-  return d->ExecuteResultDataType;
-}
-
-//---------------------------------------------------------------------------
-void qSlicerJupyterKernelModule::setExecuteResultDataType(const QString& str)
-{
-  Q_D(qSlicerJupyterKernelModule);
-  d->ExecuteResultDataType = str;
-}
-
-//---------------------------------------------------------------------------
-QString qSlicerJupyterKernelModule::executeResultDataValue()
-{
-  Q_D(qSlicerJupyterKernelModule);
-  return d->ExecuteResultDataValue;
-}
-
-//---------------------------------------------------------------------------
-void qSlicerJupyterKernelModule::setExecuteResultDataValue(const QString& str)
-{
-  Q_D(qSlicerJupyterKernelModule);
-  d->ExecuteResultDataValue = str;
-}
-
-//---------------------------------------------------------------------------
 double qSlicerJupyterKernelModule::pollIntervalSec()
 {
   Q_D(qSlicerJupyterKernelModule);
@@ -478,9 +449,7 @@ double qSlicerJupyterKernelModule::pollIntervalSec()
     qCritical() << Q_FUNC_INFO << " failed: kernel has not started yet";
     return 0.0;
   }
-  // TODO: uncomment when public API will be available
-  // return reinterpret_cast<xSlicerServer*>(d->Kernel->p_server.get())->pollIntervalSec();
-  qCritical() << Q_FUNC_INFO << " failed: not implemented";
+  return reinterpret_cast<xSlicerServer*>(&d->Kernel->get_server())->pollIntervalSec();
 
   return 0.0;
 }
@@ -495,9 +464,12 @@ void qSlicerJupyterKernelModule::setPollIntervalSec(double intervalSec)
     return;
   }
 
-  // TODO: uncomment when public API will be available
-  // reinterpret_cast<xSlicerServer*>(d->Kernel->p_server.get())->setPollIntervalSec(intervalSec);
-  qCritical() << Q_FUNC_INFO << " failed: not implemented";
+  reinterpret_cast<xSlicerServer*>(&d->Kernel->get_server())->setPollIntervalSec(intervalSec);
 }
 
-
+//---------------------------------------------------------------------------
+QString qSlicerJupyterKernelModule::connectionFile()
+{
+  Q_D(qSlicerJupyterKernelModule);
+  return d->ConnectionFile;
+}
