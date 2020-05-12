@@ -1,7 +1,5 @@
 import ctk, qt, slicer, vtk
 
-from traitlets import Unicode
-
 class displayModel():
   def __init__(self, modelNode, imageSize=None, orientation=None, zoom=None, showFeatureEdges=False):
     self.modelNode = modelNode
