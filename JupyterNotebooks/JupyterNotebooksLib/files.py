@@ -115,3 +115,35 @@ def notebookPath(verbose=False):
       pass  # There may be stale entries in the runtime directory
 
   return None
+
+
+def installExtensions(extensionNames):
+    success = True
+    import logging
+    emm = slicer.app.extensionsManagerModel()
+    installedExtensions = []
+    failedToInstallExtensions = []
+    notFoundExtensions = []
+    for extensionName in extensionNames:
+        if emm.isExtensionInstalled(extensionName):
+            continue
+        md = emm.retrieveExtensionMetadataByName(extensionName)
+        if not md or 'extension_id' not in md:
+            notFoundExtensions.append(extensionName)
+            continue
+        if not emm.downloadAndInstallExtension(md['extension_id']):
+            failedToInstallExtensions.append(extensionName)
+            continue
+        installedExtensions.append(extensionName)
+
+    if notFoundExtensions:
+        logging.warning("Extensions not found: " + ", ".join(notFoundExtensions))
+        success = False
+    if failedToInstallExtensions:
+        logging.warning("Extensions failed to install: " + ", ".join(failedToInstallExtensions))
+        success = False
+    if installedExtensions:
+        print("Extensions installed: " + ", ".join(installedExtensions))
+        logging.warning("Restart the kernel to make the installed extensions available in this notebook.")
+
+    return success

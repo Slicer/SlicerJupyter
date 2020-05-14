@@ -1,6 +1,7 @@
 import qt, slicer
 from traitlets import CFloat, Unicode, Int, validate, observe
 from ipywidgets import Image, FloatSlider, VBox, FileUpload, link
+from IPython.display import IFrame
 
 class SliceViewBaseWidget(Image):
     """This class captures a slice view and makes it available
@@ -75,7 +76,6 @@ class SliceViewWidget(VBox):
         self.sliceView = SliceViewBaseWidget(view)
         super().__init__(children=[self.sliceView.offsetSlider, self.sliceView], **kwargs)
 
-
 class ThreeDViewWidget(Image):
     """This class captures a 3D view and makes it available
     for display in the output of a Jupyter notebook cell.
@@ -128,3 +128,47 @@ class FileUploadWidget(FileUpload):
         content = self.widget.value[self.filename]['content']
         with open(self.path, 'wb') as f: f.write(content)
         print('Uploaded {0} ({1} bytes)'.format(self.filename, metadata['size']))
+
+class AppWindow(IFrame):
+    def __init__(self, contents=None, windowScale=None, windowWidth=None, windowHeight=None, **kwargs):
+        # Set default size to fill in notebook cell
+        if kwargs.get('width', None) is None:
+            kwargs['width'] = 960
+        if kwargs.get('height', None) is None:
+            kwargs['height'] = 768
+        AppWindow.setWindowSize(windowWidth, windowHeight, windowScale)
+        if contents is None:
+            contents = "viewers"
+        AppWindow.setContents(contents)
+        AppWindow.show()
+        super().__init__('../desktop', **kwargs)
+
+    @staticmethod
+    def setWindowSize(width=None, height=None, scale=None):
+        if width is None:
+            width = 1280
+        if height is None:
+            height = 1024
+        if scale is not None:
+            width *= scale
+            height *= scale
+        slicer.util.mainWindow().size = qt.QSize(width, height)
+
+    @staticmethod
+    def setContents(contents):
+        if contents=="viewers":
+            slicer.util.findChild(slicer.util.mainWindow(), "PanelDockWidget").hide()
+            slicer.util.setStatusBarVisible(False)
+            slicer.util.setMenuBarsVisible(False)
+            slicer.util.setToolbarsVisible(False)
+        elif contents=="full":
+            slicer.util.findChild(slicer.util.mainWindow(), "PanelDockWidget").show()
+            slicer.util.setStatusBarVisible(True)
+            slicer.util.setMenuBarsVisible(True)
+            slicer.util.setToolbarsVisible(True)
+        else:
+            raise ValueError("contents must be 'viewers' or 'full'")
+
+    @staticmethod
+    def show():
+        slicer.util.mainWindow().raise_()

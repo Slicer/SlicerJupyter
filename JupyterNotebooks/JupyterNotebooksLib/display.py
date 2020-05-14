@@ -1,6 +1,6 @@
 import ctk, qt, slicer, vtk
 
-class displayModel():
+class displayModel(object):
   def __init__(self, modelNode, imageSize=None, orientation=None, zoom=None, showFeatureEdges=False):
     self.modelNode = modelNode
     # rollPitchYawDeg
@@ -90,7 +90,7 @@ def displayMarkups(markupsNode):
   """Display markups node by converting to pandas dataframe object"""
   return slicer.util.dataframeFromMarkups(markupsNode)
 
-class displayTransform():
+class displayTransform(object):
   """This class displays information about a transform in a Jupyter notebook cell.
   """
   def __init__(self, transform):
@@ -130,7 +130,7 @@ def displayNode(node):
     return None
 
 
-class displayViews:
+class displayViews(object):
   """This class captures current views and makes it available
   for display in the output of a Jupyter notebook cell.
   :param viewLayout: FourUp, Conventional, OneUp3D, OneUpRedSlice,
@@ -167,7 +167,7 @@ class displayViews:
     dataType = "image/png"
     return { dataType: dataValue }
 
-class displaySliceView():
+class displaySliceView(object):
   """This class captures a slice view and makes it available
   for display in the output of a Jupyter notebook cell.
   """
@@ -198,7 +198,7 @@ class displaySliceView():
     dataType = "image/jpeg"
     return { dataType: dataValue }
 
-class display3DView():
+class display3DView(object):
   """This class captures a 3D view and makes it available
   for display in the output of a Jupyter notebook cell.
   """
@@ -237,19 +237,28 @@ class display3DView():
     dataType = "image/jpeg"
     return { dataType: dataValue }
 
-def showVolumeRendering(volumeNode, presetName=None):
+def showVolumeRendering(volumeNode, show=True, presetName=None):
   volRenLogic = slicer.modules.volumerendering.logic()
-  displayNode = volRenLogic.CreateDefaultVolumeRenderingNodes(volumeNode)
-  displayNode.SetVisibility(True)
-  scalarRange = volumeNode.GetImageData().GetScalarRange()
-  if not presetName:
-    if scalarRange[1]-scalarRange[0] < 1500:
-      # small dynamic range, probably MRI
-      presetName = 'MR-Default'
-    else:
-      # larger dynamic range, probably CT
-      presetName = 'CT-Chest-Contrast-Enhanced'
-  displayNode.GetVolumePropertyNode().Copy(volRenLogic.GetPresetByName(presetName))
+  if show:
+    displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
+    if not displayNode:
+      displayNode = volRenLogic.CreateDefaultVolumeRenderingNodes(volumeNode)
+    displayNode.SetVisibility(True)
+    scalarRange = volumeNode.GetImageData().GetScalarRange()
+    if not presetName:
+      if scalarRange[1]-scalarRange[0] < 1500:
+        # small dynamic range, probably MRI
+        presetName = 'MR-Default'
+      else:
+        # larger dynamic range, probably CT
+        presetName = 'CT-Chest-Contrast-Enhanced'
+    displayNode.GetVolumePropertyNode().Copy(volRenLogic.GetPresetByName(presetName))
+  else:
+    # hide
+    volRenLogic = slicer.modules.volumerendering.logic()
+    displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
+    if displayNode:
+      displayNode.SetVisibility(False)
 
 def reset3DView(viewID=0):
   threeDWidget = slicer.app.layoutManager().threeDWidget(viewID)
@@ -259,3 +268,64 @@ def reset3DView(viewID=0):
 def setViewLayout(layoutName):
   layoutId = eval("slicer.vtkMRMLLayoutNode.SlicerLayout"+layoutName+"View")
   slicer.app.layoutManager().setLayout(layoutId)
+
+def showSliceViewAnnotations(show):
+    # Disable slice annotations immediately
+    slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.sliceViewAnnotationsEnabled=show
+    slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.updateSliceViewFromGUI()
+    # Disable slice annotations persistently (after Slicer restarts)
+    settings = qt.QSettings()
+    settings.setValue('DataProbe/sliceViewAnnotations.enabled', 1 if show else 0)
+
+class displayViewLightbox(object):
+
+  def __init__(self, viewName=None, rows=None, columns=None, filename=None, positionRange=None, rangeShrink=None):
+    viewName = viewName if viewName else "Red"
+    rows = rows if rows else 4
+    columns = columns if columns else 6
+
+    sliceWidget = slicer.app.layoutManager().sliceWidget(viewName)
+
+    if positionRange is None:
+      sliceBounds = [0,0,0,0,0,0]
+      sliceWidget.sliceLogic().GetLowestVolumeSliceBounds(sliceBounds)
+      slicePositionRange = [sliceBounds[0], sliceBounds[1]]
+    else:
+      slicePositionRange = [positionRange[0], positionRange[1]]
+
+    if rangeShrink:
+      slicePositionRange[0] += rangeShrink[0]
+      slicePositionRange[1] -= rangeShrink[1]
+
+    # Capture red slice view, 30 images, from position -125.0 to 75.0
+    # into current folder, with name image_00001.png, image_00002.png, ...
+    import ScreenCapture
+    screenCaptureLogic = ScreenCapture.ScreenCaptureLogic()
+    viewNodeID = 'vtkMRMLSliceNodeRed'
+    destinationFolder = 'outputs/Capture-SliceSweep'
+    numberOfFrames = rows*columns
+    filenamePattern = "_lightbox_tmp_image_%05d.png"
+    viewNode = sliceWidget.mrmlSliceNode()
+    # Suppress log messages
+    def noLog(msg):
+        pass
+    screenCaptureLogic.addLog=noLog
+    # Capture images
+    screenCaptureLogic.captureSliceSweep(viewNode, slicePositionRange[0], slicePositionRange[1],
+                                         numberOfFrames, destinationFolder, filenamePattern)
+    # Create lightbox image
+    resultImageFilename = filename if filename else filenamePattern % numberOfFrames
+    screenCaptureLogic.createLightboxImage(columns, destinationFolder, filenamePattern, numberOfFrames, resultImageFilename)
+
+    # Save result
+    with open(destinationFolder+"/"+resultImageFilename, "rb") as file:
+      self.dataValue = file.read()
+      self.dataType = "image/png"
+      # This could be used to create an image widget: img = Image(value=image, format='png')
+
+    # Clean up
+    screenCaptureLogic.deleteTemporaryFiles(destinationFolder, filenamePattern, numberOfFrames if filename else numberOfFrames+1)
+
+  def _repr_mimebundle_(self, include=None, exclude=None):
+    import base64
+    return { self.dataType: base64.b64encode(self.dataValue) }
