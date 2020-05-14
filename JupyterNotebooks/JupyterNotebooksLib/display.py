@@ -1,6 +1,33 @@
 import ctk, qt, slicer, vtk
 
-class displayModel(object):
+def displayable(obj):
+  """Convert Slicer-specific objects to displayable objects
+  """
+  try:
+
+    # Workaround until xeus-python support matplotlib inline backend
+    if str(type(obj)) == "<class 'matplotlib.figure.Figure'>":
+      return MatplotlibDisplay(obj)
+
+    if hasattr(obj, "IsA"):
+      # MRML node
+      if obj.IsA("vtkMRMLMarkupsNode"):
+        return slicer.util.dataframeFromMarkups(obj)
+      elif obj.IsA("vtkMRMLTableNode"):
+        return slicer.util.dataframeFromTable(obj)
+      elif obj.IsA("vtkMRMLModelNode"):
+        return ModelDisplay(obj)
+      elif obj.IsA("vtkMRMLTransformNode"):
+        return TransformDisplay(obj)
+
+  except:
+    # Error occurred, most likely the input was not a known object type
+    return obj
+
+  # Unknown object
+  return obj
+
+class ModelDisplay(object):
   def __init__(self, modelNode, imageSize=None, orientation=None, zoom=None, showFeatureEdges=False):
     self.modelNode = modelNode
     # rollPitchYawDeg
@@ -82,15 +109,7 @@ class displayModel(object):
 
     return { dataType: dataValue }
 
-def displayTable(tableNode):
-  """Display table node by converting to pandas dataframe object"""
-  return slicer.util.dataframeFromTable(tableNode)
-
-def displayMarkups(markupsNode):
-  """Display markups node by converting to pandas dataframe object"""
-  return slicer.util.dataframeFromMarkups(markupsNode)
-
-class displayTransform(object):
+class TransformDisplay(object):
   """This class displays information about a transform in a Jupyter notebook cell.
   """
   def __init__(self, transform):
@@ -110,27 +129,8 @@ class displayTransform(object):
   def _repr_mimebundle_(self, include=None, exclude=None):
     return { "text/html": self.dataValue }
 
-def displayNode(node):
-  if not hasattr(node, "IsA"):
-    # not a MRML node
-    return None
 
-  try:
-    if node.IsA("vtkMRMLMarkupsNode"):
-      return displayMarkups(node)
-    elif node.IsA("vtkMRMLModelNode"):
-      return displayModel(node)
-    elif node.IsA("vtkMRMLTableNode"):
-      return displayTable(node)
-    elif node.IsA("vtkMRMLTransformNode"):
-      return displayTransform(node)
-
-  except:
-    # Error occurred, most likely the input was not a MRML node
-    return None
-
-
-class displayViews(object):
+class ViewDisplay(object):
   """This class captures current views and makes it available
   for display in the output of a Jupyter notebook cell.
   :param viewLayout: FourUp, Conventional, OneUp3D, OneUpRedSlice,
@@ -167,7 +167,7 @@ class displayViews(object):
     dataType = "image/png"
     return { dataType: dataValue }
 
-class displaySliceView(object):
+class ViewSliceDisplay(object):
   """This class captures a slice view and makes it available
   for display in the output of a Jupyter notebook cell.
   """
@@ -198,7 +198,7 @@ class displaySliceView(object):
     dataType = "image/jpeg"
     return { dataType: dataValue }
 
-class display3DView(object):
+class View3DDisplay(object):
   """This class captures a 3D view and makes it available
   for display in the output of a Jupyter notebook cell.
   """
@@ -237,47 +237,8 @@ class display3DView(object):
     dataType = "image/jpeg"
     return { dataType: dataValue }
 
-def showVolumeRendering(volumeNode, show=True, presetName=None):
-  volRenLogic = slicer.modules.volumerendering.logic()
-  if show:
-    displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
-    if not displayNode:
-      displayNode = volRenLogic.CreateDefaultVolumeRenderingNodes(volumeNode)
-    displayNode.SetVisibility(True)
-    scalarRange = volumeNode.GetImageData().GetScalarRange()
-    if not presetName:
-      if scalarRange[1]-scalarRange[0] < 1500:
-        # small dynamic range, probably MRI
-        presetName = 'MR-Default'
-      else:
-        # larger dynamic range, probably CT
-        presetName = 'CT-Chest-Contrast-Enhanced'
-    displayNode.GetVolumePropertyNode().Copy(volRenLogic.GetPresetByName(presetName))
-  else:
-    # hide
-    volRenLogic = slicer.modules.volumerendering.logic()
-    displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
-    if displayNode:
-      displayNode.SetVisibility(False)
 
-def reset3DView(viewID=0):
-  threeDWidget = slicer.app.layoutManager().threeDWidget(viewID)
-  threeDView = threeDWidget.threeDView()
-  threeDView.resetFocalPoint()
-
-def setViewLayout(layoutName):
-  layoutId = eval("slicer.vtkMRMLLayoutNode.SlicerLayout"+layoutName+"View")
-  slicer.app.layoutManager().setLayout(layoutId)
-
-def showSliceViewAnnotations(show):
-    # Disable slice annotations immediately
-    slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.sliceViewAnnotationsEnabled=show
-    slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.updateSliceViewFromGUI()
-    # Disable slice annotations persistently (after Slicer restarts)
-    settings = qt.QSettings()
-    settings.setValue('DataProbe/sliceViewAnnotations.enabled', 1 if show else 0)
-
-class displayViewLightbox(object):
+class ViewLightboxDisplay(object):
 
   def __init__(self, viewName=None, rows=None, columns=None, filename=None, positionRange=None, rangeShrink=None):
     viewName = viewName if viewName else "Red"
@@ -329,3 +290,89 @@ class displayViewLightbox(object):
   def _repr_mimebundle_(self, include=None, exclude=None):
     import base64
     return { self.dataType: base64.b64encode(self.dataValue) }
+
+class MatplotlibDisplay(object):
+  """Display matplotlib plot in a notebook cell.
+
+  This helper function will probably not needed after this issue is fixed:
+  https://github.com/jupyter-xeus/xeus-python/issues/224
+
+  Important: set matplotlib to use agg backend:
+
+      import matplotlib
+      matplotlib.use('agg')
+
+  Example usage:
+
+      import matplotlib
+      matplotlib.use('agg')
+
+      import matplotlib.pyplot as plt
+      import numpy as np
+      # Data for plotting
+      t = np.arange(0.0, 2.0, 0.01)
+      s = 1 + np.sin(2 * np.pi * t)
+      # Setup plot
+      fig, ax = plt.subplots()
+      ax.plot(t, s)
+      ax.set(xlabel='time (s)', ylabel='voltage (mV)',
+            title='About as simple as it gets, folks')
+      ax.grid()
+
+      slicernb.displayMatplotlib(plt)
+
+  """
+  def __init__(self, fig):
+    filename = "__matplotlib_temp.png"
+    fig.savefig(filename)
+    with open(filename, "rb") as file:
+      self.dataValue = file.read()
+      self.dataType = "image/png"
+    import os
+    os.remove(filename)
+
+  def _repr_mimebundle_(self, include=None, exclude=None):
+    import base64
+    return { self.dataType: base64.b64encode(self.dataValue) }
+
+# Utility functions for customizing what is shown in views
+
+def showVolumeRendering(volumeNode, show=True, presetName=None):
+  volRenLogic = slicer.modules.volumerendering.logic()
+  if show:
+    displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
+    if not displayNode:
+      displayNode = volRenLogic.CreateDefaultVolumeRenderingNodes(volumeNode)
+    displayNode.SetVisibility(True)
+    scalarRange = volumeNode.GetImageData().GetScalarRange()
+    if not presetName:
+      if scalarRange[1]-scalarRange[0] < 1500:
+        # small dynamic range, probably MRI
+        presetName = 'MR-Default'
+      else:
+        # larger dynamic range, probably CT
+        presetName = 'CT-Chest-Contrast-Enhanced'
+    displayNode.GetVolumePropertyNode().Copy(volRenLogic.GetPresetByName(presetName))
+  else:
+    # hide
+    volRenLogic = slicer.modules.volumerendering.logic()
+    displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
+    if displayNode:
+      displayNode.SetVisibility(False)
+
+def reset3DView(viewID=0):
+  threeDWidget = slicer.app.layoutManager().threeDWidget(viewID)
+  threeDView = threeDWidget.threeDView()
+  threeDView.resetFocalPoint()
+
+def setViewLayout(layoutName):
+  layoutId = eval("slicer.vtkMRMLLayoutNode.SlicerLayout"+layoutName+"View")
+  slicer.app.layoutManager().setLayout(layoutId)
+
+def showSliceViewAnnotations(show):
+    # Disable slice annotations immediately
+    slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.sliceViewAnnotationsEnabled=show
+    slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.updateSliceViewFromGUI()
+    # Disable slice annotations persistently (after Slicer restarts)
+    settings = qt.QSettings()
+    settings.setValue('DataProbe/sliceViewAnnotations.enabled', 1 if show else 0)

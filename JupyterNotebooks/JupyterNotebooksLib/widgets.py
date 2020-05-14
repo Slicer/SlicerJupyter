@@ -3,7 +3,7 @@ from traitlets import CFloat, Unicode, Int, validate, observe
 from ipywidgets import Image, FloatSlider, VBox, FileUpload, link
 from IPython.display import IFrame
 
-class SliceViewBaseWidget(Image):
+class ViewSliceBaseWidget(Image):
     """This class captures a slice view and makes it available
     for display in the output of a Jupyter notebook cell.
     """
@@ -71,12 +71,12 @@ class SliceViewBaseWidget(Image):
         self.value = bArray.data()
 
 
-class SliceViewWidget(VBox):
+class ViewSliceWidget(VBox):
     def __init__(self, view=None, **kwargs):
-        self.sliceView = SliceViewBaseWidget(view)
+        self.sliceView = ViewSliceBaseWidget(view)
         super().__init__(children=[self.sliceView.offsetSlider, self.sliceView], **kwargs)
 
-class ThreeDViewWidget(Image):
+class View3DWidget(Image):
     """This class captures a 3D view and makes it available
     for display in the output of a Jupyter notebook cell.
     """

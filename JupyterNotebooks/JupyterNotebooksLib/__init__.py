@@ -1,11 +1,14 @@
 # TODO: separate widgets (can be inserted into layouts) from functions (providing data)
 
-# views (widgets and rendering utils)
-from .display import displayViews, displaySliceView, display3DView, displayViewLightbox
+# Displayable objects from views
+from .display import ViewDisplay, ViewSliceDisplay, View3DDisplay, ViewLightboxDisplay
+
+# Rendering utility functions
 from .display import setViewLayout, showSliceViewAnnotations, showVolumeRendering, reset3DView
 
-# mrml (convert MRML nodes to data types that has nice visualization in notebooks)
-from .display import displayModel, displayTable, displayMarkups, displayTransform, displayNode
+# Convert MRML nodes and other common data types to objects that can be
+# nicely displayed in notebooks
+from .display import displayable, ModelDisplay, TransformDisplay, MatplotlibDisplay
 
 # cli
 from .cli import cliRunSync
@@ -19,5 +22,5 @@ try:
 except ImportError:
     pass
 else:
-    from .widgets import SliceViewWidget, SliceViewBaseWidget, ThreeDViewWidget, FileUploadWidget, AppWindow
-    from .interactive_view_widget import InteractiveViewWidget
+    from .widgets import ViewSliceWidget, ViewSliceBaseWidget, View3DWidget, FileUploadWidget, AppWindow
+    from .interactive_view_widget import ViewInteractiveWidget

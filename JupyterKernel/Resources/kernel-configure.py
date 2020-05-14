@@ -3,7 +3,7 @@
 # as raw text in Slicer's Python console and as
 # rich output in Jupyter notebook.
 
-from JupyterNotebooksLib import displayNode as __displayNode
+from JupyterNotebooksLib import displayable as __JupyterNotebooksLib_displayable
 
 def slicerDisplayHook(value):
   # show raw output in Slicer's Python console
@@ -13,10 +13,8 @@ def slicerDisplayHook(value):
 
   # Convert Slicer data objects to objects that the notebook
   # can display better.
-  nodeValue = __displayNode(value)
-  if nodeValue is not None:
-    value = nodeValue
-
+  # This applied when displaying the last command of a cell automatically.
+  value = __JupyterNotebooksLib_displayable(value)
   # forward value to xeus-python display hook
   slicer.xeusPythonDisplayHook(value)
 

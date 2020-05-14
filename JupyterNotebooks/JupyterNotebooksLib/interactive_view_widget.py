@@ -1,7 +1,7 @@
 import qt, slicer
 from ipycanvas import Canvas
 
-class InteractiveViewWidget(Canvas):
+class ViewInteractiveWidget(Canvas):
   """Remote controller for Slicer viewers."""
 
   def __init__(self, layoutLabel=None, renderView=None, **kwargs):
