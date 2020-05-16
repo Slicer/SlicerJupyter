@@ -29,15 +29,13 @@ def displayable(obj):
 
 class ModelDisplay(object):
   def __init__(self, modelNode, imageSize=None, orientation=None, zoom=None, showFeatureEdges=False):
-    self.modelNode = modelNode
     # rollPitchYawDeg
-    self.orientation = [0,0,0] if orientation is None else orientation
-    self.zoom = 1.0 if zoom is None else zoom
-    self.imageSize = [300,300] if imageSize is None else imageSize
-    self.showFeatureEdges = showFeatureEdges
+    orientation = [0,0,0] if orientation is None else orientation
+    zoom = 1.0 if zoom is None else zoom
+    imageSize = [300,300] if imageSize is None else imageSize
+    showFeatureEdges = showFeatureEdges
 
-  def _repr_mimebundle_(self, include=None, exclude=None):
-    modelPolyData = self.modelNode.GetPolyData()
+    modelPolyData = modelNode.GetPolyData()
 
     renderer = vtk.vtkRenderer()
     renderer.SetBackground(1,1,1)
@@ -46,7 +44,7 @@ class ModelDisplay(object):
     renderer.SetOcclusionRatio(0.1)
     renWin = vtk.vtkRenderWindow()
     renWin.OffScreenRenderingOn()
-    renWin.SetSize(self.imageSize[0], self.imageSize[1])
+    renWin.SetSize(imageSize[0], imageSize[1])
     renWin.SetAlphaBitPlanes(1); # for depth peeling
     renWin.SetMultiSamples(0); # for depth peeling
     renWin.AddRenderer(renderer)
@@ -69,7 +67,7 @@ class ModelDisplay(object):
     triangleFilter = vtk.vtkTriangleFilter()
     triangleFilter.SetInputConnection(modelNormals.GetOutputPort())
 
-    if self.showFeatureEdges:
+    if showFeatureEdges:
 
       edgeExtractor = vtk.vtkFeatureEdges()
       edgeExtractor.SetInputConnection(triangleFilter.GetOutputPort())
@@ -88,11 +86,11 @@ class ModelDisplay(object):
 
     # Set projection to parallel to enable estimate distances
     renderer.GetActiveCamera().ParallelProjectionOn()
-    renderer.GetActiveCamera().Roll(self.orientation[0])
-    renderer.GetActiveCamera().Pitch(self.orientation[1])
-    renderer.GetActiveCamera().Yaw(self.orientation[2])
+    renderer.GetActiveCamera().Roll(orientation[0])
+    renderer.GetActiveCamera().Pitch(orientation[1])
+    renderer.GetActiveCamera().Yaw(orientation[2])
     renderer.ResetCamera()
-    renderer.GetActiveCamera().Zoom(self.zoom)
+    renderer.GetActiveCamera().Zoom(zoom)
 
     windowToImageFilter = vtk.vtkWindowToImageFilter()
     windowToImageFilter.SetInput(renWin)
@@ -104,10 +102,11 @@ class ModelDisplay(object):
     buffer = qt.QBuffer(bArray)
     buffer.open(qt.QIODevice.WriteOnly)
     screenshot.save(buffer, "PNG")
-    dataValue = bArray.toBase64().data().decode()
-    dataType = "image/png"
+    self.dataValue = bArray.toBase64().data().decode()
+    self.dataType = "image/png"
 
-    return { dataType: dataValue }
+  def _repr_mimebundle_(self, include=None, exclude=None):
+    return { self.dataType: self.dataValue }
 
 class TransformDisplay(object):
   """This class displays information about a transform in a Jupyter notebook cell.
@@ -144,13 +143,10 @@ class ViewDisplay(object):
   :param center: re-center slice and 3D views
   """
   def __init__(self, viewLayout=None, center=True):
-    self.viewLayout = viewLayout
-    self.center = center
-  def _repr_mimebundle_(self, include=None, exclude=None):
     layoutManager = slicer.app.layoutManager()
-    if self.viewLayout:
-      setViewLayout(self.viewLayout)
-    if self.center:
+    if viewLayout:
+      setViewLayout(viewLayout)
+    if center:
       slicer.util.resetSliceViews()
       for viewId in range(layoutManager.threeDViewCount):
         reset3DView(viewId)
@@ -163,27 +159,27 @@ class ViewDisplay(object):
     buffer = qt.QBuffer(bArray)
     buffer.open(qt.QIODevice.WriteOnly)
     screenshot.save(buffer, "PNG")
-    dataValue = bArray.toBase64().data().decode()
-    dataType = "image/png"
-    return { dataType: dataValue }
+    self.dataValue = bArray.toBase64().data().decode()
+    self.dataType = "image/png"
+  def _repr_mimebundle_(self, include=None, exclude=None):
+    return { self.dataType: self.dataValue }
 
 class ViewSliceDisplay(object):
   """This class captures a slice view and makes it available
   for display in the output of a Jupyter notebook cell.
   """
   def __init__(self, viewName=None, positionPercent=None):
-    self.viewName = viewName if viewName else "Red"
-    self.positionPercent = positionPercent
-  def _repr_mimebundle_(self, include=None, exclude=None):
+    if not viewName:
+      viewName = "Red"
     layoutManager = slicer.app.layoutManager()
     slicer.app.processEvents()
-    sliceWidget = layoutManager.sliceWidget(self.viewName)
-    if self.positionPercent is not None:
+    sliceWidget = layoutManager.sliceWidget(viewName)
+    if positionPercent is not None:
       sliceBounds = [0,0,0,0,0,0]
       sliceWidget.sliceLogic().GetLowestVolumeSliceBounds(sliceBounds)
       positionMin = sliceBounds[4]
       positionMax = sliceBounds[5]
-      position = positionMin + self.positionPercent / 100.0 * (positionMax - positionMin)
+      position = positionMin + positionPercent / 100.0 * (positionMax - positionMin)
       sliceWidget.sliceController().sliceOffsetSlider().setValue(position)
     sliceView = sliceWidget.sliceView()
     sliceView.forceRender()
@@ -193,30 +189,28 @@ class ViewSliceDisplay(object):
     buffer.open(qt.QIODevice.WriteOnly)
     #screenshot.save(buffer, "PNG")
     screenshot.save(buffer, "JPG")
-    dataValue = bArray.toBase64().data().decode()
-    #dataType = "image/png"
-    dataType = "image/jpeg"
-    return { dataType: dataValue }
+    self.dataValue = bArray.toBase64().data().decode()
+    #self.dataType = "image/png"
+    self.dataType = "image/jpeg"
+  def _repr_mimebundle_(self, include=None, exclude=None):
+    return { self.dataType: self.dataValue }
 
 class View3DDisplay(object):
   """This class captures a 3D view and makes it available
   for display in the output of a Jupyter notebook cell.
   """
   def __init__(self, viewID=0, orientation=None):
-    self.viewID = viewID
-    self.orientation = orientation
-  def _repr_mimebundle_(self, include=None, exclude=None):
     slicer.app.processEvents()
-    widget = slicer.app.layoutManager().threeDWidget(self.viewID)
+    widget = slicer.app.layoutManager().threeDWidget(viewID)
     view = widget.threeDView()
-    if self.orientation is not None:
+    if orientation is not None:
       camera = view.interactorStyle().GetCameraNode().GetCamera()
       cameraToWorld = vtk.vtkTransform()
       cameraToWorld.RotateX(90)
       cameraToWorld.RotateY(180)
-      cameraToWorld.RotateY(self.orientation[2])
-      cameraToWorld.RotateX(self.orientation[1])
-      cameraToWorld.RotateZ(self.orientation[0])
+      cameraToWorld.RotateY(orientation[2])
+      cameraToWorld.RotateX(orientation[1])
+      cameraToWorld.RotateZ(orientation[0])
       cameraToWorld.Translate(0, 0, camera.GetDistance())
       viewUp = [0,1,0,0]
       slicer.vtkAddonMathUtilities.GetOrientationMatrixColumn(cameraToWorld.GetMatrix(), 1, viewUp)
@@ -232,10 +226,11 @@ class View3DDisplay(object):
     buffer.open(qt.QIODevice.WriteOnly)
     #screenshot.save(buffer, "PNG")
     screenshot.save(buffer, "JPG")
-    dataValue = bArray.toBase64().data().decode()
+    self.dataValue = bArray.toBase64().data().decode()
     #dataType = "image/png"
-    dataType = "image/jpeg"
-    return { dataType: dataValue }
+    self.dataType = "image/jpeg"
+  def _repr_mimebundle_(self, include=None, exclude=None):
+    return { self.dataType: self.dataValue }
 
 
 class ViewLightboxDisplay(object):

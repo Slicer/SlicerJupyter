@@ -1,5 +1,18 @@
 import slicer
 
+def getFileNameFromURL(url):
+    import urllib
+    req = urllib.request.Request(url, method='HEAD')
+    r = urllib.request.urlopen(req)
+    filename = r.info().get_filename()
+    if not filename:
+      # No filename is available, try to get it from the url
+      import os
+      from urllib.parse import urlparse
+      parsedUrl = urlparse(url)
+      filename = os.path.basename(parsedUrl.path)
+    return filename
+
 def downloadFromURL(uris=None, fileNames=None, nodeNames=None, checksums=None, loadFiles=None,
   customDownloader=None, loadFileTypes=None, loadFileProperties={}):
   """Download data from custom URL with progress bar.
@@ -24,13 +37,42 @@ def downloadFromURL(uris=None, fileNames=None, nodeNames=None, checksums=None, l
     sampleDataLogic.logMessage = reporthook
     display(progress) # show progress bar
 
+  computeFileNames = not fileNames
+  computeNodeNames = not nodeNames
+  if computeFileNames or computeNodeNames:
+    urisList = uris if type(uris) == list else [uris]
+    if computeFileNames:
+      fileNames = []
+    else:
+      filenamesList = fileNames if type(fileNames) == list else [fileNames]
+    if computeNodeNames:
+      nodeNames = []
+    else:
+      nodeNamesList = nodeNames if type(nodeNamesList) == list else [nodeNames]
+    import os
+    for index, uri in enumerate(urisList):
+      if computeFileNames:
+        fileName = getFileNameFromURL(uri)
+        fileNames.append(fileName)
+      else:
+        fileName = fileNames[index]
+      if computeNodeNames:
+        fileNameWithoutExtension, _ = os.path.splitext(fileName)
+        nodeNames.append(fileNameWithoutExtension)
+        
+  if type(uris) != list:
+    if type(fileNames) == list:
+      fileNames = fileNames[0]
+    if type(nodeNames) == list:
+      nodeNames = nodeNames[0]
+        
   downloaded = sampleDataLogic.downloadFromURL(uris, fileNames, nodeNames, checksums, loadFiles,
     customDownloader, loadFileTypes, loadFileProperties)
 
   if progress:
     progress.layout.display = 'none' # hide progress bar
-
-  return downloaded
+    
+  return downloaded[0] if len(downloaded) == 1 else downloaded
 
 def localPath(filename=None):
   import os
