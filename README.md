@@ -9,7 +9,7 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 You can use this option for a quick start. No installation or setup is needed, just click the link below and start using Slicer via Jupyter notebook in your web browser.
 
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/slicer/SlicerNotebooks/master)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/lassoan/SlicerNotebooks/Slicer-4.11-20200515)
 
 When you click on the link, Binder launches 3D Slicer with SlicerJupyter extension on their cloud servers. Binder is a free service and server resources are quite limited. Also, there is no interactive access to the graphical user interface. Therefore, this option is only recommended for testing, demos, or simple computations or visualizations.
 
@@ -22,10 +22,22 @@ When you click on the link, Binder launches 3D Slicer with SlicerJupyter extensi
   * You can choose any Python version and any bitness (Python 3, 64-bit is recommended)
   * Adding Python to your PATH environment variable or registering as default Python is not required
 * Install [3D Slicer](https://download.slicer.org/), start it, and install SlicerJupyter extension in its Extension Manager, restart 3D Slicer
+* Install Python packages in 3D Slicer's Python console by copy-pasting these lines:
+```
+import os
+if os.name=='nt':
+    # There are no official pyzmq wheels for Python-3.6 for Windows, so we have to install manually
+    pip_install("https://files.pythonhosted.org/packages/94/e1/13059383d21444caa16306b48c8bf7a62331ca361d553d2119696ea67119/pyzmq-19.0.0-cp36-cp36m-win_amd64.whl")
+else:
+    # PIL may be corrupted on linux, reinstall from pillow
+    pip_install('--upgrade pillow --force-reinstall')
+pip_install("ipywidgets pandas ipyevents ipycanvas")
+```
 * Install Slicer jupyter kernel
   * Switch to JupyterKernel module in 3D Slicer
   * Click "Copy command to clipboard" to copy the kernel installation command to the clipboard
   * Start a command prompt in the Python environment where Jupyter is installed, and paste and run the kernel installation command
+  * Install Python packages for dynamic Slicer views display by running these commands in the installed Python environment: `python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents`
 * Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
 
 See video of installation steps using Anaconda here:

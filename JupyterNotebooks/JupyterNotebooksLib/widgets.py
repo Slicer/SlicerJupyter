@@ -130,6 +130,10 @@ class FileUploadWidget(FileUpload):
         print('Uploaded {0} ({1} bytes)'.format(self.filename, metadata['size']))
 
 class AppWindow(IFrame):
+    """Shows interactive screen of a remote desktop session. Requires remte desktop view configured to be displayed at ../desktop URL.
+    If multiple kernels are used then the sceen space is shared between them. Make application window full-screen and call `show()`
+    to ensure that current window is on top.
+    """
     def __init__(self, contents=None, windowScale=None, windowWidth=None, windowHeight=None, **kwargs):
         # Set default size to fill in notebook cell
         if kwargs.get('width', None) is None:
