@@ -9,7 +9,7 @@ Extension for 3D Slicer that allows the application to be used from Jupyter note
 
 You can use this option for a quick start. No installation or setup is needed, just click the link below and start using Slicer via Jupyter notebook in your web browser.
 
-[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/lassoan/SlicerNotebooks/Slicer-4.11-20200515)
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/Slicer/SlicerNotebooks/master)
 
 When you click on the link, Binder launches 3D Slicer with SlicerJupyter extension on their cloud servers. Binder is a free service and server resources are quite limited. Also, there is no interactive access to the graphical user interface. Therefore, this option is only recommended for testing, demos, or simple computations or visualizations.
 
