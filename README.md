@@ -1,7 +1,7 @@
 # SlicerJupyter
 Extension for 3D Slicer that allows the application to be used from Jupyter notebook
 
-*This project is under active development. Its content, API and behavior may change at any time.*
+**Demo video: https://youtu.be/oZ3_cRXX2QM**
 
 # Usage
 
@@ -37,7 +37,14 @@ pip_install("ipywidgets pandas ipyevents ipycanvas")
   * Switch to JupyterKernel module in 3D Slicer
   * Click "Copy command to clipboard" to copy the kernel installation command to the clipboard
   * Start a command prompt in the Python environment where Jupyter is installed, and paste and run the kernel installation command
-  * Install Python packages for dynamic Slicer views display by running these commands in the installed Python environment: `python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents`
+  * Install Python packages for dynamic Slicer views display by running these command in the installed Python environment: `python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents`. For Jupyter lab, run these additional commands:
+```
+conda install -c conda-forge nodejs
+pip install ipywidgets ipyevents ipycanvas
+jupyter labextension install @jupyter-widgets/jupyterlab-manager
+jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
+jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
+```
 * Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
 
 See video of installation steps using Anaconda here:
