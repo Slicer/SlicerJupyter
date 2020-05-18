@@ -72,6 +72,13 @@ public slots:
   void stopKernel();
   void setPollIntervalSec(double intervalSec);
 
+signals:
+  // Called after kernel has successfully started
+  void kernelStarted();
+
+  // Called when Jupyter requested stopping of the kernel.
+  void kernelStopRequested();
+
 protected:
 
   /// Initialize the module. Register the volumes reader/writer

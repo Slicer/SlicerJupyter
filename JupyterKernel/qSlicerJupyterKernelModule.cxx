@@ -307,6 +307,7 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
       }
       d->StatusLabel->setText(tr("<b><font color=\"red\">Application is managed by Jupyter</font></b>"));
     }
+    emit kernelStarted();
   }
 }
 
@@ -315,6 +316,7 @@ void qSlicerJupyterKernelModule::stopKernel()
 {
   Q_D(qSlicerJupyterKernelModule);
   // Kernel shutdown requested
+  emit kernelStopRequested();
   if (d->StatusLabel)
   {
     d->StatusLabel->setText("");
