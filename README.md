@@ -1,7 +1,9 @@
 # SlicerJupyter
 Extension for 3D Slicer that allows the application to be used from Jupyter notebook
 
-**Demo video: https://youtu.be/oZ3_cRXX2QM**
+Demo video: https://youtu.be/oZ3_cRXX2QM
+
+[![](https://img.youtube.com/vi/oZ3_cRXX2QM/0.jpg)](https://www.youtube.com/watch?v=oZ3_cRXX2QM "Slicer Jupyter kernel demo")
 
 # Usage
 
