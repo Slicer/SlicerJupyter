@@ -57,12 +57,20 @@ See video of installation steps using Anaconda here:
 
 ![Select Slicer kernel](doc/StartKernel.png)
 
-* While the kernel is starting, "Kernel starting, please wait.." message is displayed. After a few ten seconds Slicer kernel should start.
-* Slicer-specific display functions (they create objects that can be displayed in the notebook):
-  * `slicer.nb.displayViews()` displays current view layout (slice, 3D, table, etc. views) as shown in the application
-  * `slicer.nb.displayTable(tableNode)` displays a table node (by converting it to a pandas dataframe). Installation of `pandas` Python package in Slicer's Python environment is required (it can be installed by running `pip_install('pandas')` in a notebook.
-  * `slicer.nb.displayModel(modelNode)` displays a model node (rendered into an image, experimental)
-  * Current display features will improve and probably more display features will come that allows quick viewining of a MRML node in a notebook.
+* While the kernel is starting, "Kernel starting, please wait.." message is displayed. After maximum few ten seconds Slicer kernel should start.
+* Do a quick test - show views content in the notebook:
+
+```
+import JupyterNotebooksLib as slicernb
+slicernb.ViewDisplay()
+```
+
+* Try the interactive view widget:
+
+```
+slicernb.ViewInteractiveWidget()
+```
+
 * Hit `Tab` key for auto-complete
 * Hit `Shift`+`Tab` for showing documentation for a method (hit multiple times to show more details). Note: method name must be complete (you can use `Tab` key to complete the name) and the cursor must be inside the name or right after it (not in the parentheses). For example, type `slicer.util.getNode` and hit `Shift`+`Tab`.
 
@@ -70,36 +78,9 @@ See video of installation steps using Anaconda here:
 
 ![Hit Shift-Tab key to inspect](doc/Inspect.png)
 
-## Example
+## Examples
 
-You can get started by looking at [example Slicer notebooks here](https://github.com/Slicer/SlicerNotebooks) or looking at sample scripts below.
-
-Load data and show an axial slice view:
-
-<pre>
-slicer.mrmlScene.Clear(False)
-import SampleData
-sampleDataLogic = SampleData.SampleDataLogic()
-volume = sampleDataLogic.downloadCTChest()
-slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUpRedSliceView)
-slicer.nb.displayViews()
-</pre>
-
-Create a surface mesh from the image:
-
-<pre>
-parameters = {}
-parameters["InputVolume"] = volume.GetID()
-parameters["Threshold"] = 220
-outModel = slicer.vtkMRMLModelNode()
-slicer.mrmlScene.AddNode( outModel )
-parameters["OutputGeometry"] = outModel.GetID()
-grayMaker = slicer.modules.grayscalemodelmaker
-slicer.cli.runSync(grayMaker, None, parameters)
-slicer.app.layoutManager().setLayout(slicer.vtkMRMLLayoutNode.SlicerLayoutOneUp3DView)
-slicer.app.layoutManager().threeDWidget(0).threeDView().resetCamera()
-slicer.nb.displayModel(outModel, orientation=[0,90,0])
-</pre>
+You can get started by looking at [example Slicer notebooks here](https://github.com/Slicer/SlicerNotebooks).
 
 # For developers
 
