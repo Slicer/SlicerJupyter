@@ -156,6 +156,7 @@ class AppWindow(IFrame):
         if scale is not None:
             width *= scale
             height *= scale
+        slicer.util.mainWindow().showNormal()  # make sure the window is not maximized
         slicer.util.mainWindow().size = qt.QSize(width, height)
 
     @staticmethod
