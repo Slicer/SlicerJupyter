@@ -19,12 +19,8 @@ When you click on the link, Binder launches 3D Slicer with SlicerJupyter extensi
 
 ### Setup
 
-* Install Python and Jupyter notebook
-  * Install [Anaconda](https://www.anaconda.com/products/individual) (recommended) or any other Python distribution (see installation instructions [here](http://jupyter.org/install))
-  * You can choose any Python version and any bitness (Python 3, 64-bit is recommended)
-  * Adding Python to your PATH environment variable or registering as default Python is not required
 * Install [3D Slicer](https://download.slicer.org/), start it, and install SlicerJupyter extension in its Extension Manager, restart 3D Slicer
-* Install Python packages in 3D Slicer's Python console by copy-pasting these lines:
+* Install Python packages **in 3D Slicer's Python console** by copy-pasting these lines:
 ```
 import os
 if os.name=='nt':
@@ -35,11 +31,18 @@ else:
     pip_install('--upgrade pillow --force-reinstall')
 pip_install("ipywidgets pandas ipyevents ipycanvas")
 ```
-* Install Slicer jupyter kernel
-  * Switch to JupyterKernel module in 3D Slicer
-  * Click "Copy command to clipboard" to copy the kernel installation command to the clipboard
-  * Start a command prompt in the Python environment where Jupyter is installed, and paste and run the kernel installation command
-  * Install Python packages for dynamic Slicer views display by running these command in the installed Python environment: `python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents`. For Jupyter lab, run these additional commands:
+* Install a Python distribution and Jupyter
+  * Install [Anaconda](https://www.anaconda.com/products/individual) (recommended) or any other Python distribution (see installation instructions [here](http://jupyter.org/install))
+  * You can choose any Python version and any bitness (Python 3, 64-bit is recommended)
+  * Adding Python to your PATH environment variable or registering as default Python is not required
+  * Start a command prompt in the Python environment
+  * Install widget support by running these commands in the Python command prompt:
+```
+python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents
+jupyter nbextension enable --py widgetsnbextension
+jupyter nbextension enable --py ipyevents
+```
+  * For Jupyter lab, run these additional commands:
 ```
 conda install -c conda-forge nodejs
 pip install ipywidgets ipyevents ipycanvas
@@ -47,6 +50,10 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
 ```
+* Install Slicer kernel in the Python command prompt:
+  * Switch to JupyterKernel module in 3D Slicer
+  * Click "Copy command to clipboard" to copy the kernel installation command to the clipboard
+  * Paste the command in the Python command prompt (not in Slicer's Python console)
 * Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
 
 See video of installation steps using Anaconda here:
