@@ -15,12 +15,15 @@ You can use this option for a quick start. No installation or setup is needed, j
 
 When you click on the link, Binder launches 3D Slicer with SlicerJupyter extension on their cloud servers. Binder is a free service and server resources are quite limited. Also, there is no interactive access to the graphical user interface. Therefore, this option is only recommended for testing, demos, or simple computations or visualizations.
 
-## Option 2. Run Slicer and Jupyter on your own computer
+## Option 2. Run using docker on your computer
 
-### Setup
+- Install [docker](https://www.docker.com/)
+- Run the docker image as described [here](https://github.com/Slicer/SlicerDocker/blob/master/README.rst#usage-of-slicer-notebook-image)
+
+## Option 3. Install Slicer and Jupyter on your own computer
 
 * Install [3D Slicer](https://download.slicer.org/), start it, and install SlicerJupyter extension in its Extension Manager, restart 3D Slicer
-* Install Python packages **in 3D Slicer's Python console** by copy-pasting these lines:
+* Install Python packages by copy-pasting these lines **in 3D Slicer's Python console**:
 ```
 import os
 if os.name=='nt':
@@ -31,18 +34,18 @@ else:
     pip_install('--upgrade pillow --force-reinstall')
 pip_install("ipywidgets pandas ipyevents ipycanvas")
 ```
-* Install a Python distribution and Jupyter
+* If you don't have Python and Jupyter installed on your computer already, then install them by following the steps below. We will refer to this as the **External Python environment**.
   * Install [Anaconda](https://www.anaconda.com/products/individual) (recommended) or any other Python distribution (see installation instructions [here](http://jupyter.org/install))
   * You can choose any Python version and any bitness (Python 3, 64-bit is recommended)
   * Adding Python to your PATH environment variable or registering as default Python is not required
   * Start a command prompt in the Python environment
-  * Install widget support by running these commands in the Python command prompt:
+* Install Jupyter widget support by running these commands in the **External Python environment**:
 ```
 python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents
 jupyter nbextension enable --py widgetsnbextension
 jupyter nbextension enable --py ipyevents
 ```
-  * For Jupyter lab, run these additional commands:
+* For Jupyter lab, run these additional commands in the **External Python environment**:
 ```
 conda install -c conda-forge nodejs
 pip install ipywidgets ipyevents ipycanvas
@@ -50,17 +53,17 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
 jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
 ```
-* Install Slicer kernel in the Python command prompt:
+* Install Slicer kernel in in the **External Python environment**:
   * Switch to JupyterKernel module in 3D Slicer
   * Click "Copy command to clipboard" to copy the kernel installation command to the clipboard
   * Paste the command in the Python command prompt (not in Slicer's Python console)
-* Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable.
+* Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable in the **External Python environment**.
 
 See video of installation steps using Anaconda here:
 
 [![](doc/InstallVideoThumbnail.png)](https://youtu.be/jcRsRw6RC2g)
 
-## Using Slicer from a notebook
+# Using Slicer from a notebook
 
 * Create a new notebook, selecting _Slicer 4.x_ kernel (for example, _Slicer 4.11_). Jupyter will open a new Slicer instance automatically when kernel start is requested. This Slicer instance will be automatically closed when kernel shutdown is requested.
 
@@ -87,7 +90,7 @@ slicernb.ViewInteractiveWidget()
 
 ![Hit Shift-Tab key to inspect](doc/Inspect.png)
 
-## Examples
+# Examples
 
 You can get started by looking at [example Slicer notebooks here](https://github.com/Slicer/SlicerNotebooks).
 
