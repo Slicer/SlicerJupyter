@@ -156,7 +156,10 @@ class AppWindow(IFrame):
         if scale is not None:
             width *= scale
             height *= scale
-        slicer.util.mainWindow().showNormal()  # make sure the window is not maximized
+        # make sure the window is not maximized, because then we cannot adjust its size
+        currentWindowState = slicer.util.mainWindow().windowState()
+        if currentWindowState & qt.Qt.WindowMaximized:
+            slicer.util.mainWindow().setWindowState(currentWindowState & ~qt.Qt.WindowMaximized)
         slicer.util.mainWindow().size = qt.QSize(width, height)
 
     @staticmethod
@@ -176,4 +179,14 @@ class AppWindow(IFrame):
 
     @staticmethod
     def show():
-        slicer.util.mainWindow().raise_()
+        mw = slicer.util.mainWindow()
+        import os
+        if os.name=='nt':
+            # On Windows, the main window would just flash if we simply activate it, but it is not raised.
+            # We can force raising by minimizing it then un-minimizing it.
+            mw.setWindowState(mw.windowState() | qt.Qt.WindowMinimized)  # minimize
+            mw.setWindowState(mw.windowState() & ~qt.Qt.WindowMinimized)  # un-minimize
+            mw.activateWindow()
+        else:
+            mw.setWindowState(mw.windowState() & ~qt.Qt.WindowMinimized)  # un-minimize
+            mw.raise_()
