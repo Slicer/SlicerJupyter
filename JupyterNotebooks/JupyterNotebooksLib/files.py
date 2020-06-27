@@ -158,6 +158,64 @@ def notebookPath(verbose=False):
 
   return None
 
+def notebookSaveCheckpoint():
+    """Save a checkpoint of current notebook. Returns True on success."""
+    try:
+      from IPython.display import Javascript
+      from IPython.display import display
+    except ModuleNotFoundError:
+      import logging
+      logging.error("notebookSaveCheckpoint requires ipywidgets. It can be installed by running this command:\n\n    pip_install('ipywidgets')\n")
+      return False
+
+    script = '''
+    require(["base/js/namespace"],function(Jupyter) {
+        Jupyter.notebook.save_checkpoint();
+    });
+    '''
+    display(Javascript(script))
+    return True
+
+def notebookExportToHtml(outputFilePath=None):
+    """Export current notebook to HTML.
+    If outputFilePath is not specified then filename will be generated from the notebook filename
+    with current timestamp appended.
+    It returns full path of the saved html file.
+    It requires nbformat and nbconvert packages. You can use this command to install them:
+        pip_install("nbformat nbconvert")
+    """
+    try:
+      import nbformat
+      from nbconvert import HTMLExporter
+    except ModuleNotFoundError:
+      import logging
+      logging.error("notebookExportToHtml requires nbformat and nbconvert. They can be installed by running this command:\n\n    pip_install('nbformat nbconvert')\n")
+
+    import datetime, json, os
+
+    notebook_path = notebookPath()
+
+    # Generate output file path from notebook name and timestamp (if not specified)
+    if not outputFilePath:
+      this_notebook_name = os.path.splitext(os.path.basename(notebook_path))[0]
+      save_timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+      save_file_name = this_notebook_name + "_" + save_timestamp + ".html"
+      notebooks_save_path = os.path.dirname(notebook_path)
+      outputFilePath = os.path.join(notebooks_save_path, save_file_name)
+
+    with open(notebook_path, mode="r") as f:
+        file_json = json.load(f)
+        
+    notebook_content = nbformat.reads(json.dumps(file_json), as_version=4)
+
+    html_exporter = HTMLExporter()
+    (body, resources) = html_exporter.from_notebook_node(notebook_content)
+
+    f = open(outputFilePath, 'wb')
+    f.write(body.encode())
+    f.close()
+
+    return outputFilePath
 
 def installExtensions(extensionNames):
     success = True

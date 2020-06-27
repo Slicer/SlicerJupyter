@@ -14,13 +14,13 @@ from .display import displayable, ModelDisplay, TransformDisplay, MatplotlibDisp
 from .cli import cliRunSync
 
 # util (file management, useful widgets)
-from .files import downloadFromURL, localPath, notebookPath, installExtensions
+from .files import downloadFromURL, localPath, notebookPath, notebookSaveCheckpoint, notebookExportToHtml, installExtensions
 
 # widgets
 try:
     import ipywidgets
 except ImportError:
-    pass
+    print("ipywidgets is not installed in 3D Slicer's Python environment. These classes will not be available: ViewSliceWidget, ViewSliceBaseWidget, View3DWidget, FileUploadWidget, AppWindow, ViewInteractiveWidget")
 else:
     from .widgets import ViewSliceWidget, ViewSliceBaseWidget, View3DWidget, FileUploadWidget, AppWindow
     from .interactive_view_widget import ViewInteractiveWidget
