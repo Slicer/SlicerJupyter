@@ -21,11 +21,16 @@ xSlicerInterpreter::xSlicerInterpreter()
   // We call publish_stream instead when PythonQt emits outputs and
   // use a custom display hook.
 {
+  // GIL is already released, so we need to prevent
+  // the interpreter from attempting to release it again.
+  m_release_gil_at_startup = false;
 }
 
 
 void xSlicerInterpreter::configure_impl()
 {
+  xpyt::interpreter::configure_impl();
+
   auto handle_comm_opened = [](xeus::xcomm&& comm, const xeus::xmessage&) {
     std::cout << "Comm opened for target: " << comm.target().name() << std::endl;
   };
@@ -45,13 +50,6 @@ void xSlicerInterpreter::configure_impl()
   // Make xeus-python display hook available as slicer.xeusPythonDisplayHook
   py::module slicer_module = py::module::import("slicer");
   slicer_module.attr("xeusPythonDisplayHook") = m_displayhook;
-
-  py::gil_scoped_acquire acquire;
-  py::module jedi = py::module::import("jedi");
-  jedi.attr("api").attr("environment").attr("get_default_environment") = py::cpp_function([jedi]() {
-    jedi.attr("api").attr("environment").attr("SameEnvironment")();
-    });
-
 }
 
 nl::json xSlicerInterpreter::execute_request_impl(int execution_counter,
