@@ -21,7 +21,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_VERSION
-    "0.17.0"
+    "0.15.2"
     QUIET
     )
 
