@@ -32,6 +32,7 @@ if os.name=='nt':
 else:
     # PIL may be corrupted on linux, reinstall from pillow
     pip_install('--upgrade pillow --force-reinstall')
+
 pip_install("ipywidgets pandas ipyevents ipycanvas")
 ```
 * If you don't have Python and Jupyter installed on your computer already, then install them by following the steps below. We will refer to this as the **External Python environment**.
