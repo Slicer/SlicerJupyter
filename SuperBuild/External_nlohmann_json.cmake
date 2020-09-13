@@ -34,7 +34,6 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
-  set(EP_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
@@ -60,12 +59,12 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -Dnlohmann_json_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       -DCMAKE_INSTALL_LIBDIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR} # Skip default initialization by GNUInstallDirs CMake module
       # Options
-      -DCMAKE_INSTALL_PREFIX:PATH=${EP_INSTALL_DIR}
       -DBUILD_TESTING:BOOL=OFF
+    INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
     )
-  set(${proj}_DIR ${EP_INSTALL_DIR}/lib/cmake/nlohmann_json/)
+  set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
