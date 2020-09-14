@@ -21,7 +21,15 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_VERSION
-    "0.15.2"
+    "0.17.0"
+    QUIET
+    )
+
+  # By default, parso-0.8.0 would be downloaded, which is incompatible with
+  # jedi 0.17.x, therefore we need to set parso version manually.
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_parso_VERSION
+    "0.7.1"
     QUIET
     )
 
@@ -45,6 +53,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
         PYTHONPATH=${python_sitepackages_DIR}
         ${wrapper_script} ${PYTHON_EXECUTABLE} -m pip install
           jedi==${${CMAKE_PROJECT_NAME}_${proj}_VERSION} ${_no_binary}
+          parso==${CMAKE_PROJECT_NAME}_parso_VERSION
           --prefix ${python_packages_DIR_NATIVE_DIR}
           --force-reinstall
     )
