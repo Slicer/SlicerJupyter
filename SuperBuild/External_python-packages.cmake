@@ -1,4 +1,4 @@
-set(proj python-pygments)
+set(proj python-packages)
 
 # Set dependency list
 set(${proj}_DEPENDENCIES "")
@@ -8,7 +8,7 @@ ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj DEPENDS_VAR ${proj
 
 if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   ExternalProject_FindPythonPackage(
-    MODULE_NAME "pygments"
+    MODULE_NAME "jedi"
     REQUIRED
     )
 endif()
@@ -20,7 +20,23 @@ endif()
 if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
-    ${CMAKE_PROJECT_NAME}_${proj}_VERSION
+    ${CMAKE_PROJECT_NAME}_jedi_VERSION
+    "0.17.0"
+    QUIET
+    )
+
+  # By default, parso-0.8.0 would be downloaded, which is incompatible with
+  # jedi 0.17.x, therefore we need to set parso version manually.
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_parso_VERSION
+    "0.7.1"
+    QUIET
+    )
+
+  # By default, parso-0.8.0 would be downloaded, which is incompatible with
+  # jedi 0.17.x, therefore we need to set parso version manually.
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_pygments_VERSION
     "2.3.1"
     QUIET
     )
@@ -35,18 +51,22 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   set(_no_binary "")
 
-  # Install pygments and requirements
+  # Install jedi and requirements
   # note: --force-reinstall ensures the python dependency is installed within
   #       this library's prefix for packaging.
-  set(_install_pygments COMMAND ${CMAKE_COMMAND}
+  set(_install_jedi COMMAND ${CMAKE_COMMAND}
       -E env
         PYTHONNOUSERSITE=1
         CC=${CMAKE_C_COMPILER}
         PYTHONPATH=${python_sitepackages_DIR}
         ${wrapper_script} ${PYTHON_EXECUTABLE} -m pip install
-          pygments==${${CMAKE_PROJECT_NAME}_${proj}_VERSION} ${_no_binary}
+          jedi==${${CMAKE_PROJECT_NAME}_jedi_VERSION}
+          parso==${${CMAKE_PROJECT_NAME}_parso_VERSION}
+          pygments==${${CMAKE_PROJECT_NAME}_pygments_VERSION}
+          ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
           --force-reinstall
+          --no-warn-script-location
     )
 
   ExternalProject_Add(${proj}
@@ -57,7 +77,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     BUILD_COMMAND ""
     DOWNLOAD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E  echo_append ""
-    ${_install_pygments}
+    ${_install_jedi}
     DEPENDS
       ${${proj}_DEPENDENCIES}
     )
@@ -65,7 +85,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   ExternalProject_GenerateProjectDescription_Step(${proj}
     VERSION ${${CMAKE_PROJECT_NAME}_${proj}_VERSION}
     LICENSE_FILES
-      "https://raw.githubusercontent.com/pygments/pygments/master/LICENSE"
+      "https://raw.githubusercontent.com/davidhalter/jedi/master/LICENSE.txt"
     )
 
   #-----------------------------------------------------------------------------

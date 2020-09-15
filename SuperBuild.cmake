@@ -21,8 +21,7 @@ set(${proj}_DEPENDS
    xeus
    xeus-python
    pybind11
-   python-jedi
-   python-pygments
+   python-packages
    )
 
 ExternalProject_Include_Dependencies(${proj}
