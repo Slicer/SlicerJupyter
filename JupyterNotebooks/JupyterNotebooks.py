@@ -25,6 +25,41 @@ This module adds utility functions to make Slicer features conveniently availabl
 The module is originally developed by Andras Lasso.
     """
 
+class SlicerJupyterServerHelper:
+  def installRequiredPackages(self, force=False):
+
+    # Need to install if forced or any packages cannot be imported
+    needToInstall = force
+    if not needToInstall:
+      try:
+        import jupyter
+        import ipywidgets
+        import pandas
+        import ipyevents
+        import ipycanvas
+      except:
+        needToInstall = True
+
+    if needToInstall:
+      # Install required packages
+      import os
+      if os.name=='nt':
+        # There are no official pyzmq wheels for Python-3.6 for Windows, so we have to install manually
+        slicer.util.pip_install("https://files.pythonhosted.org/packages/94/e1/13059383d21444caa16306b48c8bf7a62331ca361d553d2119696ea67119/pyzmq-19.0.0-cp36-cp36m-win_amd64.whl")
+      else:
+        # PIL may be corrupted on linux, reinstall from pillow
+        slicer.util.pip_install('--upgrade pillow --force-reinstall')
+
+      slicer.util.pip_install("jupyter ipywidgets pandas ipyevents ipycanvas --no-warn-script-location")
+      slicer.util._executePythonModule("jupyter", "nbextension enable --py widgetsnbextension".split(" "))
+      slicer.util._executePythonModule("jupyter", "nbextension enable --py ipyevents".split(" "))
+
+    # Install Slicer Jupyter kernel
+    # Create Slicer kernel
+    slicer.modules.jupyterkernel.updateKernelSpec()
+    # Install Slicer kernel
+    import jupyter_client
+    jupyter_client.kernelspec.KernelSpecManager().install_kernel_spec(slicer.modules.jupyterkernel.kernelSpecPath(), user=True, replace=True)
 
 class JupyterNotebooksTest(ScriptedLoadableModuleTest):
   """

@@ -64,8 +64,8 @@ void qSlicerJupyterKernelModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
-  d->PythonScriptsFolderEdit->setFilters(ctkPathLineEdit::Dirs);
-  d->PythonScriptsFolderEdit->setSettingKey("JupyterKernelPythonScriptsDir");
+  d->NotebookPathLineEdit->setFilters(ctkPathLineEdit::Dirs);
+  d->NotebookPathLineEdit->setSettingKey("JupyterKernelNotebookDir");
 
   qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
   if (kernelModule)
@@ -79,66 +79,113 @@ void qSlicerJupyterKernelModuleWidget::setup()
     }
   }
 
-  connect(d->InstallSlicerKernelPushButton, SIGNAL(clicked()), this, SLOT(onInstallSlicerKernel()));
-  connect(d->CopyCommandToClipboardPushButton, SIGNAL(clicked()), this, SLOT(onCopyInstallCommandToClipboard()));
-  connect(d->StartJupyterNotebookPushButton, SIGNAL(clicked()), this, SLOT(onStartJupyterNotebook()));
+  // Stopping of the server does not work and it is not really needed either.
+  // We hide it for now, later the features will be either fixed or completely removed.
+  d->StopJupyterNotebookPushButton->hide();
 
-  // Hide automatic kernel installation section.
-  // It does not work with virtual environments and kernel installation has become quite easy using
-  // Anaconda navigator application.
-  // If there will be a robust way of finding Python environments and running tools in them then
-  // we can consider show this section again.
-  d->AutomaticKernelInstallationGroupBox->setVisible(false);
+  connect(d->StartJupyterNotebookPushButton, SIGNAL(clicked()), this, SLOT(startJupyterServer()));
+  connect(d->StopJupyterNotebookPushButton, SIGNAL(clicked()), this, SLOT(stopJupyterServer()));
 
-  // Hide control section for now.
-  // Currently, it has a button for starting jupyter notebook, but it requires Qt-5.10.
-  // Also, users may want to run the notebook in a virtual environment.
-  d->ControlCollapsibleButton->setVisible(false);
+  connect(d->CopyCommandToClipboardPushButton, SIGNAL(clicked()), this, SLOT(copyInstallCommandToClipboard()));
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerJupyterKernelModuleWidget::onCopyInstallCommandToClipboard()
+void qSlicerJupyterKernelModuleWidget::copyInstallCommandToClipboard()
 {
   Q_D(qSlicerJupyterKernelModuleWidget);
   QApplication::clipboard()->setText(d->ManualInstallCommandTextEdit->toPlainText());
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerJupyterKernelModuleWidget::onInstallSlicerKernel()
+bool qSlicerJupyterKernelModuleWidget::installJupyterServer()
 {
   Q_D(qSlicerJupyterKernelModuleWidget);
-  d->PythonScriptsFolderEdit->addCurrentPathToHistory();
   qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
   if (!kernelModule)
   {
     qWarning() << Q_FUNC_INFO << " failed: invalid module";
-    return;
+    return false;
   }
 
-  d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation in progress..."));
+  d->JupyterServerStatusLabel->setText(tr("Jupyter installation is in progress... it may take 10-15 minutes."));
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
-  bool success = kernelModule->installSlicerKernel(d->PythonScriptsFolderEdit->currentPath());
+  bool success = kernelModule->installInternalJupyterServer();
   QApplication::restoreOverrideCursor();
   if (success)
   {
-    d->InstallSlicerKernelStatusLabel->setText(tr("Kernel installation completed successfully."));
+    d->JupyterServerStatusLabel->setText(tr("Jupyter installation completed successfully."));
   }
   else
   {
-    d->InstallSlicerKernelStatusLabel->setText(tr("Automatic kernel installation failed. See application log for details."));
+    d->JupyterServerStatusLabel->setText(tr("Jupyter installation failed. See application log for details."));
+  }
+  return success;
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerJupyterKernelModuleWidget::startJupyterServer()
+{
+  Q_D(qSlicerJupyterKernelModuleWidget);
+  d->NotebookPathLineEdit->addCurrentPathToHistory();
+  qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
+  if (!kernelModule)
+  {
+    d->JupyterServerStatusLabel->setText(tr("Jupyter server start failed."));
+    qWarning() << Q_FUNC_INFO << " failed: invalid module";
+    return;
+  }
+  if (kernelModule->isInternalJupyterServerRunning())
+  {
+    d->JupyterServerStatusLabel->setText(tr("Jupyter server is already running."));
+    return;
+  }
+  bool installationSuccess = this->installJupyterServer();
+  if (installationSuccess)
+  {
+    d->JupyterServerStatusLabel->setText(tr("Starting Jupyter server..."));
+  }
+  else
+  {
+    d->JupyterServerStatusLabel->setText(tr("Error occurred during installation, attempting to start Jupyter server anyway..."));
+  }
+  // Start in detached mode so that Slicer can be shut down without impacting the server.
+  bool detached = true;
+  if (kernelModule->startInternalJupyterServer(d->NotebookPathLineEdit->currentPath(), detached))
+  {
+    if (detached)
+    {
+      d->JupyterServerStatusLabel->setText(tr("Jupyter server started successfully.\nThis application can be stopped now. Jupyter server will keep running."));
+    }
+    else
+    {
+      d->JupyterServerStatusLabel->setText(tr("Jupyter server started successfully.")); 
+    }
+  }
+  else
+  {
+    d->JupyterServerStatusLabel->setText(tr("Jupyter server start failed. See application log for details."));
   }
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerJupyterKernelModuleWidget::onStartJupyterNotebook()
+void qSlicerJupyterKernelModuleWidget::stopJupyterServer()
 {
   Q_D(qSlicerJupyterKernelModuleWidget);
-  d->PythonScriptsFolderEdit->addCurrentPathToHistory();
   qSlicerJupyterKernelModule* kernelModule = dynamic_cast<qSlicerJupyterKernelModule*>(this->module());
   if (!kernelModule)
   {
     qWarning() << Q_FUNC_INFO << " failed: invalid module";
+    d->JupyterServerStatusLabel->setText(tr("Jupyter server stop failed."));
     return;
   }
-  kernelModule->startJupyterNotebook(d->PythonScriptsFolderEdit->currentPath());
+  if (!kernelModule->isInternalJupyterServerRunning())
+  {
+    d->JupyterServerStatusLabel->setText(tr("Jupyter server is already stopped."));
+    return;
+  }
+  kernelModule->stopInternalJupyterServer();
+  if (kernelModule->isInternalJupyterServerRunning())
+  {
+    d->JupyterServerStatusLabel->setText(tr("Jupyter server stop failed. See application log for details."));
+  }
 }

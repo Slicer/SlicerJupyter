@@ -25,6 +25,8 @@
 #include "qSlicerApplication.h"
 #include "qSlicerPythonManager.h"
 
+#include "PythonQt.h"
+
 // On Windows, pyerrors.h redefines snprintf to _snprintf
 // which causes error C2039: '_snprintf': is not a member of 'std'
 // while trying to compile std::snprintf in json.hpp (in nlohmann_json).
@@ -38,6 +40,7 @@
 #include <QFile>
 #include <QLabel>
 #include <QMainWindow>
+#include <QStandardPaths>
 #include <QStatusBar>
 #include <QTextStream>
 
@@ -74,6 +77,7 @@ protected:
 public:
   qSlicerJupyterKernelModulePrivate(qSlicerJupyterKernelModule& object);
 
+  QProcess InternalJupyterServer;
   bool Started;
   QString ConnectionFile;
   xeus::xkernel * Kernel;
@@ -353,9 +357,16 @@ bool qSlicerJupyterKernelModule::slicerKernelSpecInstallCommandArgs(QString& exe
 }
 
 //-----------------------------------------------------------------------------
-bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder)
+bool qSlicerJupyterKernelModule::installInternalJupyterServer()
 {
   Q_D(qSlicerJupyterKernelModule);
+
+  PythonQt::init();
+  PythonQtObjectPtr context = PythonQt::self()->getMainModule();
+  context.evalScript(QString("success=False; import JupyterNotebooks; server=JupyterNotebooks.SlicerJupyterServerHelper(); success=server.installRequiredPackages()"));
+  bool success = context.getVariable("success").toBool();
+  return success;
+  /*
 
   QString kernelspecExecutable;
   QStringList args;
@@ -399,36 +410,54 @@ bool qSlicerJupyterKernelModule::installSlicerKernel(QString pythonScriptsFolder
     return false;
   }
   return true;
+  */
 }
 
 //-----------------------------------------------------------------------------
-bool qSlicerJupyterKernelModule::startJupyterNotebook(QString pythonScriptsFolder)
+bool qSlicerJupyterKernelModule::startInternalJupyterServer(QString notebookDirectory, bool detached/*=false*/)
 {
   Q_D(qSlicerJupyterKernelModule);
-  qSlicerApplication* app = qSlicerApplication::application();
-
-  vtkSlicerJupyterKernelLogic* kernelLogic = vtkSlicerJupyterKernelLogic::SafeDownCast(this->logic());
-  if (!kernelLogic)
+  QString pythonExecutable = QStandardPaths::findExecutable("PythonSlicer");
+  d->InternalJupyterServer.setProgram(pythonExecutable);
+  QStringList args;
+  args << "-m" << "notebook";
+  args << "--notebook-dir" << notebookDirectory;
+  d->InternalJupyterServer.setArguments(args);
+  bool success = false;
+  if (detached)
   {
-    qWarning() << Q_FUNC_INFO << " failed: invalid logic";
-    return false;
+    success = d->InternalJupyterServer.startDetached();
   }
+  else
+  {
+    d->InternalJupyterServer.start();
+    success = d->InternalJupyterServer.waitForStarted();
+  }
+  return success;
+}
 
-  QString kernelExecutable = pythonScriptsFolder + "/" + "jupyter-notebook";
+//-----------------------------------------------------------------------------
+bool qSlicerJupyterKernelModule::isInternalJupyterServerRunning() const
+{
+  Q_D(const qSlicerJupyterKernelModule);
+  return d->InternalJupyterServer.state() == QProcess::Running;
+}
 
-  QProcess kernelSpecProcess;
-  kernelSpecProcess.setProcessEnvironment(app->startupEnvironment());
-  kernelSpecProcess.setProgram(kernelExecutable);
-
-  // TODO: decide if we want to allow users to start notebook from Slicer.
-  // Detached start would require Qt-5.10 and users might want to start the notebook manually, in a virtual environment.
-  // kernelSpecProcess.startDetached();
-  //return true;
-  return false;
+//-----------------------------------------------------------------------------
+bool qSlicerJupyterKernelModule::stopInternalJupyterServer()
+{
+  Q_D(qSlicerJupyterKernelModule);
+  // TOOD: currently, none of these methods work for stopping a server that is
+  // started using AppLauncher.
+  // terminate() is not strong enough.
+  // kill() immediately kills the launcher but not the launched application.
+  d->InternalJupyterServer.terminate();
+  //d->InternalJupyterServer.kill();
+  return d->InternalJupyterServer.waitForFinished(5000);
 }
 
 //---------------------------------------------------------------------------
-QString qSlicerJupyterKernelModule::resourceFolderPath()
+QString qSlicerJupyterKernelModule::kernelSpecPath()
 {
   vtkSlicerJupyterKernelLogic* kernelLogic = vtkSlicerJupyterKernelLogic::SafeDownCast(this->logic());
   if (!kernelLogic)
@@ -440,6 +469,11 @@ QString qSlicerJupyterKernelModule::resourceFolderPath()
   QString path = QString("%1/%2-%3.%4").arg(kernelLogic->GetModuleShareDirectory().c_str())
     .arg(app->applicationName()).arg(app->majorVersion()).arg(app->minorVersion());
   return path;
+}
+
+QString qSlicerJupyterKernelModule::resourceFolderPath()
+{
+  return this->kernelSpecPath();
 }
 
 //---------------------------------------------------------------------------

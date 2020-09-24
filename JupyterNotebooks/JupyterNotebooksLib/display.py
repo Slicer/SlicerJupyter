@@ -245,7 +245,7 @@ class ViewLightboxDisplay(object):
     if positionRange is None:
       sliceBounds = [0,0,0,0,0,0]
       sliceWidget.sliceLogic().GetLowestVolumeSliceBounds(sliceBounds)
-      slicePositionRange = [sliceBounds[0], sliceBounds[1]]
+      slicePositionRange = [sliceBounds[4], sliceBounds[5]]
     else:
       slicePositionRange = [positionRange[0], positionRange[1]]
 

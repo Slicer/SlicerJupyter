@@ -37,6 +37,7 @@ qSlicerJupyterKernelModule
   Q_INTERFACES(qSlicerLoadableModule);
   Q_PROPERTY(double pollIntervalSec READ pollIntervalSec WRITE setPollIntervalSec)
   Q_PROPERTY(QString connectionFile READ connectionFile)
+  Q_PROPERTY(bool internalJupyterServerRunning READ isInternalJupyterServerRunning)
 public:
 
   typedef qSlicerLoadableModule Superclass;
@@ -56,10 +57,28 @@ public:
 
   Q_INVOKABLE virtual bool updateKernelSpec();
 
-  Q_INVOKABLE virtual bool slicerKernelSpecInstallCommandArgs(QString& executable, QStringList& args);
-  Q_INVOKABLE virtual bool installSlicerKernel(QString pythonScriptsFolder);
-  Q_INVOKABLE virtual bool startJupyterNotebook(QString pythonScriptsFolder);
+  /// Get path where KernelSpec is created.
+  Q_INVOKABLE virtual QString kernelSpecPath();
 
+  Q_INVOKABLE virtual bool slicerKernelSpecInstallCommandArgs(QString& executable, QStringList& args);
+
+  /// Install Jupyter server in Slicer's Python environment
+  Q_INVOKABLE virtual bool installInternalJupyterServer();
+
+  /// Start Jupyter server in Slicer's Python environment.
+  /// Set detached=false to run the server as a child process and shutdown along with the application.
+  Q_INVOKABLE virtual bool startInternalJupyterServer(QString notebookDirectory, bool detached=true);
+
+  /// Stop Jupyter server in Slicer's Python environment.
+  /// Currently it does not work (it only terminates the launcher and not the actual application).
+  /// In the future, this method will be fixed or removed.
+  Q_INVOKABLE virtual bool stopInternalJupyterServer();
+
+  /// Returns true if internal Jupyter server is successfully started and still running.
+  /// Only applicable to server that is started with detached=false.
+  bool isInternalJupyterServerRunning() const;
+
+  /// Deprecated. Use kernelSpecPath() instead.
   Q_INVOKABLE virtual QString resourceFolderPath();
 
   double pollIntervalSec();

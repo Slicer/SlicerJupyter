@@ -40,9 +40,11 @@ public:
 
 public slots:
 
-  void onInstallSlicerKernel();
-  void onCopyInstallCommandToClipboard();
-  void onStartJupyterNotebook();
+  void copyInstallCommandToClipboard();
+
+  bool installJupyterServer();
+  void startJupyterServer();
+  void stopJupyterServer();
 
 protected:
   QScopedPointer<qSlicerJupyterKernelModuleWidgetPrivate> d_ptr;

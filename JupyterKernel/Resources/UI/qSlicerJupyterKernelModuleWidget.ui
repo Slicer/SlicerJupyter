@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>504</width>
-    <height>423</height>
+    <width>409</width>
+    <height>384</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,100 +15,100 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="ctkCollapsibleButton" name="SetupCollapsibleButton">
+    <widget class="ctkCollapsibleButton" name="InternalServerCollapsibleButton">
      <property name="text">
-      <string>Setup</string>
+      <string>Jupyter server in Slicer Python environment</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
-      <item row="2" column="0" colspan="2">
-       <widget class="QGroupBox" name="AutomaticKernelInstallationGroupBox">
-        <property name="title">
-         <string>Automatic Slicer kernel installation: </string>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Notebook directory:</string>
         </property>
-        <layout class="QFormLayout" name="formLayout_2">
-         <item row="1" column="0">
-          <widget class="QLabel" name="PythonScriptsFolderLabel">
-           <property name="toolTip">
-            <string>Folder that contains 'jupyter-kernelspec' executable</string>
-           </property>
-           <property name="text">
-            <string>Python Scripts folder:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="ctkPathLineEdit" name="PythonScriptsFolderEdit">
-           <property name="toolTip">
-            <string>Folder that contains 'jupyter-kernelspec' executable</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0" colspan="2">
-          <widget class="QPushButton" name="InstallSlicerKernelPushButton">
-           <property name="text">
-            <string>Install Slicer kernel in Jupyter</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0" colspan="2">
-          <widget class="QLabel" name="InstallSlicerKernelStatusLabel">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>Slicer kernel installation</string>
+      <item row="0" column="1">
+       <widget class="ctkPathLineEdit" name="NotebookPathLineEdit"/>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QLabel" name="JupyterServerStatusLabel">
+        <property name="text">
+         <string/>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
-         <item>
-          <widget class="QLabel" name="KernelFolderLabel_2">
-           <property name="text">
-            <string>Run this command in a terminal in your Python environment:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTextEdit" name="ManualInstallCommandTextEdit">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>50</height>
-            </size>
-           </property>
-           <property name="readOnly">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="CopyCommandToClipboardPushButton">
-           <property name="text">
-            <string>Copy command to clipboard</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QPushButton" name="StopJupyterNotebookPushButton">
+        <property name="text">
+         <string>Stop Jupyter server</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QPushButton" name="StartJupyterNotebookPushButton">
+        <property name="text">
+         <string>Start Jupyter server</string>
+        </property>
        </widget>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="ctkCollapsibleButton" name="ControlCollapsibleButton">
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>5</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="ExternalServerCollapsibleButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
-      <string>Control</string>
+      <string>Jupyter server in external Python environment</string>
+     </property>
+     <property name="collapsed">
+      <bool>true</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QPushButton" name="StartJupyterNotebookPushButton">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>Start Jupyter notebook</string>
+         <string>To install Slicer Kernel, execute this command in a terminal in the external Python environment:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="ManualInstallCommandTextEdit">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="CopyCommandToClipboardPushButton">
+        <property name="text">
+         <string>Copy command to clipboard</string>
         </property>
        </widget>
       </item>

@@ -15,54 +15,36 @@ You can use this option for a quick start. No installation or setup is needed, j
 
 When you click on the link, Binder launches 3D Slicer with SlicerJupyter extension on their cloud servers. Binder is a free service and server resources are quite limited. Also, there is no interactive access to the graphical user interface. Therefore, this option is only recommended for testing, demos, or simple computations or visualizations.
 
-## Option 2. Run using docker on your computer
+## Option 2. Run on your own computer
+
+* Install [3D Slicer](https://download.slicer.org/) and launch it
+* Install `SlicerJupyter` extension in Extension Manager (in the application menu choose View/Extension Manager, click Install button of SlicerJupyter, wait for the installation to complete, and click `Restart`)
+* Switch to `JupyterKernel` module (open the module finder by click the "Search" icon on the toolbar, or hitting Ctrl/Cmd-F, then type its name)
+* Click `Start Jupyter server` button
+
+### JupyterLab
+
+Installation (in addition to the steps above):
+- Install [node.js](https://nodejs.org/en/download/). Make sure it is in a location that is included in the path (or copy node.js files into the same folder as SlicerApp-real executable)
+- Run these commands in the Python console:
+```
+pip_install('jupyterlab')
+slicer.util._executePythonModule('jupyter',['labextension','install','@jupyter-widgets/jupyterlab-manager','ipycanvas','ipyevents'])
+```
+
+Launch JupyterLab:
+```
+slicer.util._executePythonModule('jupyter',['lab'])
+```
+
+### Use external Jupyter server
+
+Slicer's Python kernel can be used in Jupyter servers in external Python environments. Kernel specification installation command is displayed in `Jupyter server in external Python environment` section in `JupyterKernel` module.
+
+## Option 3. Run using docker on your computer
 
 - Install [docker](https://www.docker.com/)
 - Run the docker image as described [here](https://github.com/Slicer/SlicerDocker/blob/master/README.rst#usage-of-slicer-notebook-image)
-
-## Option 3. Install Slicer and Jupyter on your own computer
-
-* Install [3D Slicer](https://download.slicer.org/), start it, and install SlicerJupyter extension in its Extension Manager, restart 3D Slicer
-* Install Python packages by copy-pasting these lines **in 3D Slicer's Python console**:
-```
-import os
-if os.name=='nt':
-    # There are no official pyzmq wheels for Python-3.6 for Windows, so we have to install manually
-    pip_install("https://files.pythonhosted.org/packages/94/e1/13059383d21444caa16306b48c8bf7a62331ca361d553d2119696ea67119/pyzmq-19.0.0-cp36-cp36m-win_amd64.whl")
-else:
-    # PIL may be corrupted on linux, reinstall from pillow
-    pip_install('--upgrade pillow --force-reinstall')
-
-pip_install("ipywidgets pandas ipyevents ipycanvas")
-```
-* If you don't have Python and Jupyter installed on your computer already, then install them by following the steps below. We will refer to this as the **External Python environment**.
-  * Install [Anaconda](https://www.anaconda.com/products/individual) (recommended) or any other Python distribution (see installation instructions [here](http://jupyter.org/install))
-  * You can choose any Python version and any bitness (Python 3, 64-bit is recommended)
-  * Adding Python to your PATH environment variable or registering as default Python is not required
-  * Start a command prompt in the Python environment
-* Install Jupyter widget support by running these commands in the **External Python environment**:
-```
-python -m pip install jupyter ipywidgets pandas ipycanvas ipyevents
-jupyter nbextension enable --py widgetsnbextension
-jupyter nbextension enable --py ipyevents
-```
-* For Jupyter lab, run these additional commands in the **External Python environment**:
-```
-conda install -c conda-forge nodejs
-pip install ipywidgets ipyevents ipycanvas
-jupyter labextension install @jupyter-widgets/jupyterlab-manager
-jupyter labextension install @jupyter-widgets/jupyterlab-manager ipycanvas
-jupyter labextension install @jupyter-widgets/jupyterlab-manager ipyevents
-```
-* Install Slicer kernel in in the **External Python environment**:
-  * Switch to JupyterKernel module in 3D Slicer
-  * Click "Copy command to clipboard" to copy the kernel installation command to the clipboard
-  * Paste the command in the Python command prompt (not in Slicer's Python console)
-* Start Jupyter notebook. For example, by runnning _jupyter-notebook_ executable in the **External Python environment**.
-
-See video of installation steps using Anaconda here:
-
-[![](doc/InstallVideoThumbnail.png)](https://youtu.be/jcRsRw6RC2g)
 
 # Using Slicer from a notebook
 
