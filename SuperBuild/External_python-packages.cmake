@@ -37,7 +37,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   # jedi 0.17.x, therefore we need to set parso version manually.
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_pygments_VERSION
-    "2.3.1"
+    "2.4.1"
     QUIET
     )
 
