@@ -37,7 +37,7 @@ Launch JupyterLab:
 slicer.util._executePythonModule('jupyter',['lab'])
 ```
 
-### Use external Jupyter server
+### Using external Jupyter server
 
 Slicer's Python kernel can be used in Jupyter servers in external Python environments. Kernel specification installation command is displayed in `Jupyter server in external Python environment` section in `JupyterKernel` module.
 
@@ -48,7 +48,7 @@ Slicer's Python kernel can be used in Jupyter servers in external Python environ
 
 # Using Slicer from a notebook
 
-* Create a new notebook, selecting _Slicer 4.x_ kernel (for example, _Slicer 4.11_). Jupyter will open a new Slicer instance automatically when kernel start is requested. This Slicer instance will be automatically closed when kernel shutdown is requested.
+* Create a new notebook, selecting _Slicer 4.x_ kernel (for example, _Slicer 4.13_). Jupyter will open a new Slicer instance automatically when kernel start is requested. This Slicer instance will be automatically closed when kernel is shut down. If you manually close the Slicer application (e.g., File/Exit menu is used in Slicer) then Jupyter will automaticall restart the application in a few seconds.
 
 ![Select Slicer kernel](doc/StartKernel.png)
 
