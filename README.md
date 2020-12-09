@@ -83,27 +83,16 @@ You can get started by looking at [example Slicer notebooks here](https://github
 
 ## Build instructions
 
-* Build the extension against the newly built Slicer with Qt5 and VTK9 enabled.
+- [Build 3D Slicer](https://slicer.readthedocs.io/en/latest/developer_guide/build_instructions/index.html)
+- Configure this project using CMake, set `Slicer_DIR` CMake variable to the `.../Slicer-build`
+- Install prerequisites
 
-* Install Jupyter
+## Install kernel manually
 
-```
-mkvirtualenv -p python3.6 jupyter_env  # Create and activare virtual environment
-
-pip install jupyter
-```
-
-* Install kernel
+Example:
 
 ```
-jupyter-kernelspec install /tmp/SlicerJupyter-build/inner-build/share/Slicer-4.11/qt-loadable-modules/JupyterKernel/Slicer-4.9/ --replace --user
-```
-
-* Start notebook
-
-```
-workon jupyter_env
-python -m jupyter notebook
+jupyter-kernelspec install /tmp/SlicerJupyter-build/inner-build/share/Slicer-4.13/qt-loadable-modules/JupyterKernel/Slicer-4.13/ --replace --user
 ```
 
 ## Launch a kernel manually
