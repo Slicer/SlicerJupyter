@@ -41,6 +41,8 @@ slicer.util._executePythonModule('jupyter',['lab'])
 
 Slicer's Python kernel can be used in Jupyter servers in external Python environments. Kernel specification installation command is displayed in `Jupyter server in external Python environment` section in `JupyterKernel` module.
 
+You need to install and set up these Python packages: `jupyter ipywidgets pandas ipyevents ipycanvas` (see how it is done for Slicer's Python environment [here](https://github.com/Slicer/SlicerJupyter/blob/master/JupyterNotebooks/JupyterNotebooks.py#L29-L62)).
+
 ## Option 3. Run using docker on your computer
 
 - Install [docker](https://www.docker.com/)
