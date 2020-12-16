@@ -26,7 +26,7 @@ When you click on the link, Binder launches 3D Slicer with SlicerJupyter extensi
 
 Installation (in addition to the steps above):
 - Install [node.js](https://nodejs.org/en/download/). Make sure it is in a location that is included in the path (or copy node.js files into the same folder as SlicerApp-real executable)
-- Run these commands in the Python console:
+- Run these commands in Slicer's Python console (hit Ctrl-3 to show it):
 ```
 pip_install('jupyterlab')
 slicer.util._executePythonModule('jupyter',['labextension','install','@jupyter-widgets/jupyterlab-manager','ipycanvas','ipyevents'])
