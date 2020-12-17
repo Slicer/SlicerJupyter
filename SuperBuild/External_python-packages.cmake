@@ -41,6 +41,14 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     QUIET
     )
 
+  # argon2-cffi package is needed by JupyterLab.
+  # It does not have binary wheels, therefore we need build it manually.
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_argon2_cffi_VERSION
+    "20.1.0"
+    QUIET
+    )
+
   # Alternative python prefix for installing extension python packages
   set(python_packages_DIR "${CMAKE_BINARY_DIR}/python-packages-install")
   file(TO_NATIVE_PATH ${python_packages_DIR} python_packages_DIR_NATIVE_DIR)
@@ -63,6 +71,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
           jedi==${${CMAKE_PROJECT_NAME}_jedi_VERSION}
           parso==${${CMAKE_PROJECT_NAME}_parso_VERSION}
           pygments==${${CMAKE_PROJECT_NAME}_pygments_VERSION}
+          argon2-cffi==${${CMAKE_PROJECT_NAME}_argon2_cffi_VERSION}
           ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
           --force-reinstall

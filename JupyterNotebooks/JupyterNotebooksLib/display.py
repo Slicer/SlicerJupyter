@@ -257,7 +257,6 @@ class ViewLightboxDisplay(object):
     # into current folder, with name image_00001.png, image_00002.png, ...
     import ScreenCapture
     screenCaptureLogic = ScreenCapture.ScreenCaptureLogic()
-    viewNodeID = 'vtkMRMLSliceNodeRed'
     destinationFolder = 'outputs/Capture-SliceSweep'
     numberOfFrames = rows*columns
     filenamePattern = "_lightbox_tmp_image_%05d.png"
