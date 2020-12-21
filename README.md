@@ -75,6 +75,29 @@ slicernb.ViewInteractiveWidget()
 
 ![Hit Shift-Tab key to inspect](doc/Inspect.png)
 
+## Notes
+
+### Upgrading pip
+
+You may see warning messages about upgrading pip, such as this:
+
+```
+WARNING: You are using pip version 20.1.1; however, version 20.3.3 is available.
+You should consider upgrading via the '/Applications/Slicer.app/Contents/bin/./python-real -m pip install --upgrade pip' command.
+```
+
+In general, it is not necessary to upgrade pip, so you can ignore this warning. If you do want to upgrade it then you need to use the Slicer's "Python launcher" (instead of python-real). Slicer's Python launcher is called `PythonSlicer` and it sets up Slicer's virtual Python environment so that the real Python executable (python-real) can run correctly.
+
+### Script not on PATH
+
+You may get warning about installing scripts in folder that is not on PATH:
+
+```
+WARNING: The script pyjson5 is installed in ‘/Applications/Slicer.app/Contents/lib/Python/bin’ which is not on PATH.
+```
+
+This warning is displayed to warn you that the installed script will not run by simply typing its name anywhere in a terminal. This can be safely ignored.
+
 # Examples
 
 You can get started by looking at [example Slicer notebooks here](https://github.com/Slicer/SlicerNotebooks).
