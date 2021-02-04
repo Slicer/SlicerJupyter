@@ -21,23 +21,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_jedi_VERSION
-    "0.17.0"
-    QUIET
-    )
-
-  # By default, parso-0.8.0 would be downloaded, which is incompatible with
-  # jedi 0.17.x, therefore we need to set parso version manually.
-  ExternalProject_SetIfNotDefined(
-    ${CMAKE_PROJECT_NAME}_parso_VERSION
-    "0.7.1"
-    QUIET
-    )
-
-  # By default, parso-0.8.0 would be downloaded, which is incompatible with
-  # jedi 0.17.x, therefore we need to set parso version manually.
-  ExternalProject_SetIfNotDefined(
-    ${CMAKE_PROJECT_NAME}_pygments_VERSION
-    "2.4.1"
+    "0.18.0"
     QUIET
     )
 
@@ -69,8 +53,6 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
         PYTHONPATH=${python_sitepackages_DIR}
         ${wrapper_script} ${PYTHON_EXECUTABLE} -m pip install
           jedi==${${CMAKE_PROJECT_NAME}_jedi_VERSION}
-          parso==${${CMAKE_PROJECT_NAME}_parso_VERSION}
-          pygments==${${CMAKE_PROJECT_NAME}_pygments_VERSION}
           argon2-cffi==${${CMAKE_PROJECT_NAME}_argon2_cffi_VERSION}
           ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
