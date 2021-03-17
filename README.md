@@ -98,6 +98,17 @@ WARNING: The script pyjson5 is installed in ‘/Applications/Slicer.app/Contents
 
 This warning is displayed to warn you that the installed script will not run by simply typing its name anywhere in a terminal. This can be safely ignored.
 
+### Shutdown all Slicer Jupyter kernels
+
+If a Jupyter server is kept running then it will automatically restart all kernel instances (Slicer applications) that it manages.
+If the browser window is accidentally closed before shutting down the server, then you can get the address of all running servers by typing the following into any Slicer Python console:
+
+```
+slicer.util._executePythonModule('jupyter', ['notebook', 'list'])
+```
+
+Open the address in a web browser and click "Quit" button to shutdown the server.
+
 # Examples
 
 You can get started by looking at [example Slicer notebooks here](https://github.com/Slicer/SlicerNotebooks).
