@@ -45,11 +45,13 @@ class ModelDisplay(object):
     renWin = vtk.vtkRenderWindow()
     renWin.OffScreenRenderingOn()
     renWin.SetSize(imageSize[0], imageSize[1])
-    renWin.SetAlphaBitPlanes(1); # for depth peeling
-    renWin.SetMultiSamples(0); # for depth peeling
+    renWin.SetAlphaBitPlanes(1)  # for depth peeling
+    renWin.SetMultiSamples(0)  # for depth peeling
     renWin.AddRenderer(renderer)
 
-    # Must be called after iren and renderer are linked or there will be problems
+    renderer.GetActiveCamera()  # create active camera
+
+    # Must be called after iren and renderer are linked and camera is created or there will be problems
     renderer.Render()
 
     modelNormals = vtk.vtkPolyDataNormals()
