@@ -59,19 +59,19 @@ def downloadFromURL(uris=None, fileNames=None, nodeNames=None, checksums=None, l
       if computeNodeNames:
         fileNameWithoutExtension, _ = os.path.splitext(fileName)
         nodeNames.append(fileNameWithoutExtension)
-        
+
   if type(uris) != list:
     if type(fileNames) == list:
       fileNames = fileNames[0]
     if type(nodeNames) == list:
       nodeNames = nodeNames[0]
-        
+
   downloaded = sampleDataLogic.downloadFromURL(uris, fileNames, nodeNames, checksums, loadFiles,
     customDownloader, loadFileTypes, loadFileProperties)
 
   if progress:
     progress.layout.display = 'none' # hide progress bar
-    
+
   return downloaded[0] if len(downloaded) == 1 else downloaded
 
 def localPath(filename=None):
@@ -205,7 +205,7 @@ def notebookExportToHtml(outputFilePath=None):
 
     with open(notebook_path, mode="r") as f:
         file_json = json.load(f)
-        
+
     notebook_content = nbformat.reads(json.dumps(file_json), as_version=4)
 
     html_exporter = HTMLExporter()
@@ -221,17 +221,42 @@ def installExtensions(extensionNames):
     success = True
     import logging
     emm = slicer.app.extensionsManagerModel()
+    if hasattr(emm,'interactive'):
+        # Disable popups asking to confirm installation of required extensions,
+        # as a popup would block the application.
+        emm.interactive = False
     installedExtensions = []
     failedToInstallExtensions = []
     notFoundExtensions = []
     for extensionName in extensionNames:
         if emm.isExtensionInstalled(extensionName):
             continue
-        md = emm.retrieveExtensionMetadataByName(extensionName)
-        if not md or 'extension_id' not in md:
-            notFoundExtensions.append(extensionName)
+        extensionMetaData = emm.retrieveExtensionMetadataByName(extensionName)
+        if slicer.app.majorVersion*100+slicer.app.minorVersion < 413:
+            # Slicer-4.11
+            if not extensionMetaData or 'item_id' not in extensionMetaData:
+                logging.debug(f"{extensionName} extension was not found on Extensions Server")
+                notFoundExtensions.append(extensionName)
+                continue
+            itemId = extensionMetaData['item_id']
+            url = f"{emm.serverUrl().toString()}/download?items={itemId}"
+        else:
+            # Slicer-4.13
+            if not extensionMetaData or '_id' not in extensionMetaData:
+                logging.debug(f"{extensionName} extension was not found on Extensions Server")
+                notFoundExtensions.append(extensionName)
+                continue
+            itemId = extensionMetaData['_id']
+            url = f"{emm.serverUrl().toString()}/api/v1/item/{itemId}/download"
+        extensionPackageFilename = slicer.app.temporaryPath+'/'+itemId
+        try:
+            slicer.util.downloadFile(url, extensionPackageFilename)
+        except:
+            logging.debug(f"{extensionName} download failed from {url}")
+            failedToInstallExtensions.append(extensionName)
             continue
-        if not emm.downloadAndInstallExtension(md['extension_id']):
+        if not emm.installExtension(extensionPackageFilename):
+            logging.debug(f"{extensionName} install failed")
             failedToInstallExtensions.append(extensionName)
             continue
         installedExtensions.append(extensionName)
