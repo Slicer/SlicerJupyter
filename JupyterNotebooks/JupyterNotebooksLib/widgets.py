@@ -130,11 +130,12 @@ class FileUploadWidget(FileUpload):
         print('Uploaded {0} ({1} bytes)'.format(self.filename, metadata['size']))
 
 class AppWindow(IFrame):
-    """Shows interactive screen of a remote desktop session. Requires remte desktop view configured to be displayed at ../desktop URL.
+    """Shows interactive screen of a remote desktop session. Requires remote desktop view configured to be displayed at .../desktop URL.
     If multiple kernels are used then the sceen space is shared between them. Make application window full-screen and call `show()`
     to ensure that current window is on top.
+    src argument allows specifying the URL if it is cannot be found at the default location.
     """
-    def __init__(self, contents=None, windowScale=None, windowWidth=None, windowHeight=None, **kwargs):
+    def __init__(self, contents=None, windowScale=None, windowWidth=None, windowHeight=None, src=None, **kwargs):
         # Set default size to fill in notebook cell
         if kwargs.get('width', None) is None:
             kwargs['width'] = 960
@@ -145,7 +146,19 @@ class AppWindow(IFrame):
             contents = "viewers"
         AppWindow.setContents(contents)
         AppWindow.show()
-        super().__init__('../desktop', **kwargs)
+        if src is None:
+            # Determine url of the novnc remote desktop server automatically
+            import os
+            baseUrl = os.getenv("JUPYTERHUB_SERVICE_PREFIX")
+            if baseUrl:
+                # launched by JupyterHub
+                # (example: https://hub.gke2.mybinder.org/user/lassoan-slicernotebooks-n05pb33x/desktop/)
+                src = baseUrl + "/desktop/"
+            else:
+                # runs locally
+                # (example: http://127.0.0.1:8888/desktop/)
+                src = '/desktop/'
+        super().__init__(src, **kwargs)
 
     @staticmethod
     def setWindowSize(width=None, height=None, scale=None):
