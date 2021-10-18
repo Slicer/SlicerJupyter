@@ -84,6 +84,9 @@ class ViewSliceWidget(VBox):
         self.sliceView = ViewSliceBaseWidget(view)
         super().__init__(children=[self.sliceView.offsetSlider, self.sliceView], **kwargs)
 
+    def updateImage(self):
+        self.sliceView.updateImage()
+
 class View3DWidget(Image):
     """This class captures a 3D view and makes it available
     for display in the output of a Jupyter notebook cell.
