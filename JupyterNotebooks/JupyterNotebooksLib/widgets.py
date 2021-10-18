@@ -6,6 +6,8 @@ from IPython.display import IFrame
 class ViewSliceBaseWidget(Image):
     """This class captures a slice view and makes it available
     for display in the output of a Jupyter notebook cell.
+    :param viewName: name of the slice view, such as `Red`, `Green`, `Yellow`.
+        Get list of all current slice view names by calling `slicer.app.layoutManager().sliceViewNames()`.
     """
 
     offsetMin = CFloat(100.0, help="Max value").tag(sync=True)
@@ -13,9 +15,9 @@ class ViewSliceBaseWidget(Image):
     offset = CFloat(0.0, help="Slice offset").tag(sync=True)
     viewName = Unicode(default_value='Red', help="Slice view name.").tag(sync=True)
 
-    def __init__(self, view=None, **kwargs):
-        if view:
-            self.viewName=view
+    def __init__(self, viewName=None, **kwargs):
+        if viewName:
+            self.viewName=viewName
 
         self.offsetSlider = FloatSlider(description='Offset')
 
@@ -72,6 +74,12 @@ class ViewSliceBaseWidget(Image):
 
 
 class ViewSliceWidget(VBox):
+    """This class captures a slice view and makes it available
+    for display in the output of a Jupyter notebook cell.
+    It has a slider widget to browse slices.
+    :param viewName: name of the slice view, such as `Red`, `Green`, `Yellow`.
+        Get list of all current slice view names by calling `slicer.app.layoutManager().sliceViewNames()`.
+    """
     def __init__(self, view=None, **kwargs):
         self.sliceView = ViewSliceBaseWidget(view)
         super().__init__(children=[self.sliceView.offsetSlider, self.sliceView], **kwargs)
@@ -79,13 +87,14 @@ class ViewSliceWidget(VBox):
 class View3DWidget(Image):
     """This class captures a 3D view and makes it available
     for display in the output of a Jupyter notebook cell.
+    :param viewID: integer index of the 3D view node. Valid values are between 0 and `slicer.app.layoutManager().threeDViewCount-1`.
     """
 
     viewIndex = Int(default_value=0, help="3D view index.").tag(sync=True)
 
-    def __init__(self, view=None, **kwargs):
-        if view:
-            self.viewIndex=view
+    def __init__(self, viewID=None, **kwargs):
+        if viewID:
+            self.viewIndex=viewID
 
         self.updateImage()
 
@@ -110,6 +119,7 @@ class View3DWidget(Image):
         self.value = bArray.data()
 
 class FileUploadWidget(FileUpload):
+    """Experimental file upload widget."""
     def __init__(self, **kwargs):
         self.path = None
         self.filename = None
@@ -147,21 +157,32 @@ class AppWindow(IFrame):
         AppWindow.setContents(contents)
         AppWindow.show()
         if src is None:
-            # Determine url of the novnc remote desktop server automatically
-            import os
-            baseUrl = os.getenv("JUPYTERHUB_SERVICE_PREFIX")
-            if baseUrl:
-                # launched by JupyterHub
-                # (example: https://hub.gke2.mybinder.org/user/lassoan-slicernotebooks-n05pb33x/desktop/)
-                src = baseUrl + "/desktop/"
-            else:
-                # runs locally
-                # (example: http://127.0.0.1:8888/desktop/)
-                src = '/desktop/'
+            src = AppWindow.defaultDesktopUrl()
         super().__init__(src, **kwargs)
 
     @staticmethod
+    def defaultDesktopUrl():
+        """Returns default URL of the remote desktop page."""
+        import os
+        baseUrl = os.getenv("JUPYTERHUB_SERVICE_PREFIX")
+        if baseUrl:
+            # launched by JupyterHub
+            # (example: https://hub.gke2.mybinder.org/user/lassoan-slicernotebooks-n05pb33x/desktop/)
+            url = baseUrl + "/desktop/"
+        else:
+            # runs locally
+            # (example: http://127.0.0.1:8888/desktop/)
+            url = '/desktop/'
+        return url
+
+
+    @staticmethod
     def setWindowSize(width=None, height=None, scale=None):
+        """Set application main window size.
+        :param width: image width in pixels (by default: 1280).
+        :param height: image height in pixels (by default: 1024).
+        :param scale: if specified then width and heigh is scaled by this value.
+        """
         if width is None:
             width = 1280
         if height is None:
@@ -177,6 +198,10 @@ class AppWindow(IFrame):
 
     @staticmethod
     def setContents(contents):
+        """Set application view contents.
+        - `viewers`: show only viewers.
+        - `full`: show the full application user interface.
+        """
         if contents=="viewers":
             slicer.util.findChild(slicer.util.mainWindow(), "PanelDockWidget").hide()
             slicer.util.setStatusBarVisible(False)
@@ -192,6 +217,9 @@ class AppWindow(IFrame):
 
     @staticmethod
     def show():
+        """Brings the current application window to the top.
+        This can be called to ensure that the application window is visible via a remote desktop view.
+        """
         mw = slicer.util.mainWindow()
         import os
         if os.name=='nt':

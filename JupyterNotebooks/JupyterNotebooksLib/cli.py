@@ -2,6 +2,17 @@ import slicer
 
 def cliRunSync(module, node=None, parameters=None, delete_temporary_files=True, update_display=True):
   """Run CLI module. If ipywidgets are installed then it reports progress.
+  :param module: CLI module object (derived from qSlicerCLIModule), for example `slicer.modules.thresholdscalarvolume`.
+    List of all module objects (not just CLI modules): `dir(slicer.modules)`.
+  :param node: if a parameter node (vtkMRMLCommandLineModuleNode) is specified here then that is used.
+    If left at default then a new node will be created and that node will be returned.
+  :param parameters: dicttionary containing list of input nodes and parameters and output nodes.
+  :param delete_temproary_files: set it to True to preserve all input files.
+    May be useful for debugging, but it consumes disk space.
+  :param update_display: show output volumes in slice views (resets view position and zoom factor).
+  :return: Used parameter node. If the CLI moddule does not need to be executed again then the
+    node can be removed from the scene by calling `slicer.mrmlScene.RemoveNode(parameterNode)`
+    to avoid clutter in the scene.
   """
 
   try:

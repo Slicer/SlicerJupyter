@@ -1,7 +1,8 @@
 import ctk, qt, slicer, vtk
 
 def displayable(obj):
-  """Convert Slicer-specific objects to displayable objects
+  """Convert Slicer-specific objects to displayable objects.
+  Currently, it supports vtkMRMLMarkupsNode, vtkMRMLTableNode, vtkMRMLModelNode, vtkMRMLTransformNode.
   """
   try:
 
@@ -28,6 +29,14 @@ def displayable(obj):
   return obj
 
 class ModelDisplay(object):
+  """This class displays a model node in a Jupyter notebook cell by rendering it as an image.
+    :param modelNode: model node to display.
+    :param imageSize: list containing width and height of the generated image, in pixels (default is `[300, 300]`).
+    :param zoom: allows zooming in on the rendered model (default: 1.0).
+    :param orientation: roll, pitch, yaw rotation angles of the camera, in degrees.
+    :param showFeatureEdges: outline sharp edges with lines to improve visibility.
+  """
+
   def __init__(self, modelNode, imageSize=None, orientation=None, zoom=None, showFeatureEdges=False):
     # rollPitchYawDeg
     orientation = [0,0,0] if orientation is None else orientation
@@ -134,15 +143,11 @@ class TransformDisplay(object):
 class ViewDisplay(object):
   """This class captures current views and makes it available
   for display in the output of a Jupyter notebook cell.
-  :param viewLayout: FourUp, Conventional, OneUp3D, OneUpRedSlice,
-    OneUpYellowSlice, OneUpGreenSlice, Compare, Dual3D,
-    ConventionalWidescreen, CompareWidescreen, Triple3DEndoscopy,
-    ThreeOverThree, FourOverFour, CompareGrid, TwoOverTwo,
-    SideBySide, FourByThreeSlice, FourByTwoSlice, FiveByTwoSlice,
-    ThreeByThreeSlice, FourUpTable, 3DTable, ConventionalPlot,
-    FourUpPlot, FourUpPlotTable, OneUpPlot, ThreeOverThreePlot,
-    DicomBrowser
-  :param center: re-center slice and 3D views
+  :param viewLayout: view layout name, most common ones are
+    `FourUp`, `Conventional`, `OneUp3D`, `OneUpRedSlice`, `OneUpYellowSlice`,
+    `OneUpPlot`, `OneUpGreenSlice`, `Dual3D`, `FourOverFour`, `DicomBrowser`.
+    See :py:meth:`setViewLayout` for more details on viewLayout names.
+  :param center: re-center slice and 3D views on current view content.
   """
   def __init__(self, viewLayout=None, center=True):
     layoutManager = slicer.app.layoutManager()
@@ -169,6 +174,8 @@ class ViewDisplay(object):
 class ViewSliceDisplay(object):
   """This class captures a slice view and makes it available
   for display in the output of a Jupyter notebook cell.
+  :param viewName: name of the slice view, such as `Red`, `Green`, `Yellow`.
+    Get list of all current slice view names by calling `slicer.app.layoutManager().sliceViewNames()`.
   """
   def __init__(self, viewName=None, positionPercent=None):
     if not viewName:
@@ -200,6 +207,8 @@ class ViewSliceDisplay(object):
 class View3DDisplay(object):
   """This class captures a 3D view and makes it available
   for display in the output of a Jupyter notebook cell.
+  :param viewID: integer index of the 3D view node. Valid values are between 0 and `slicer.app.layoutManager().threeDViewCount-1`.
+  :param orientation: rotation angles of the camera around R, A, S axes, in degrees.
   """
   def __init__(self, viewID=0, orientation=None):
     slicer.app.processEvents()
@@ -236,6 +245,17 @@ class View3DDisplay(object):
 
 
 class ViewLightboxDisplay(object):
+  """This class returns an image containing content of a slice view as it is sweeped over the displayed volume
+  as an object to be displayed in a Jupyter notebook cell.
+  :param viewName: :param viewName: name of the slice view, such as `Red`, `Green`, `Yellow`.
+    Get list of all current slice view names by calling `slicer.app.layoutManager().sliceViewNames()`.
+  :param rows: number of image rows.
+  :param columns: number of image columns.
+  :param positionRange: list of two float values, specifying start and end distance from the origin
+    along the slice normal.
+  :param rangeShrink: list of two float values, which modify the position range (positive value shrinks the range, on both sides).
+    Useful for cropping irrelevant regions near the image boundaries.
+  """
 
   def __init__(self, viewName=None, rows=None, columns=None, filename=None, positionRange=None, rangeShrink=None):
     viewName = viewName if viewName else "Red"
@@ -293,12 +313,12 @@ class MatplotlibDisplay(object):
   This helper function will probably not needed after this issue is fixed:
   https://github.com/jupyter-xeus/xeus-python/issues/224
 
-  Important: set matplotlib to use agg backend:
+  Important: set matplotlib to use agg backend::
 
       import matplotlib
       matplotlib.use('agg')
 
-  Example usage:
+  Example usage::
 
       import matplotlib
       matplotlib.use('agg')
@@ -334,6 +354,24 @@ class MatplotlibDisplay(object):
 # Utility functions for customizing what is shown in views
 
 def showVolumeRendering(volumeNode, show=True, presetName=None):
+  """Display volume node in 3D views using volume rendering.
+  :param volumeNode: volume node to show/hide.
+  :param show: set to True to show the volume, False to hide it.
+  :param presetName: volume rendering preset name, such as `CT-AAA`, `CT-AAA2`, `CT-Bone`, `CT-Bones`,
+    `CT-Cardiac`, `CT-Cardiac2`, `CT-Cardiac3`, `CT-Chest-Contrast-Enhanced`, `CT-Chest-Vessels`,
+    `CT-Coronary-Arteries`, `CT-Coronary-Arteries-2`, `CT-Coronary-Arteries-3`,
+    `CT-Cropped-Volume-Bone`, `CT-Fat`, `CT-Liver-Vasculature`, `CT-Lung`, `CT-MIP`,
+    `CT-Muscle`, `CT-Pulmonary-Arteries`, `CT-Soft-Tissue`, `CT-Air`, `CT-X-ray`,
+    `MR-Angio`, `MR-Default`, `MR-MIP`, `MR-T2-Brain`, `DTI-FA-Brain`, `US-Fetal`.
+
+  To get all the volume rendering preset names::
+
+    presets = slicer.modules.volumerendering.logic().GetPresetsScene().GetNodesByClass("vtkMRMLVolumePropertyNode")
+    presets.UnRegister(None)
+    for presetIndex in range(presets.GetNumberOfItems()):
+        print(presets.GetItemAsObject(presetIndex).GetName())
+
+  """
   volRenLogic = slicer.modules.volumerendering.logic()
   if show:
     displayNode = volRenLogic.GetFirstVolumeRenderingDisplayNode(volumeNode)
@@ -357,15 +395,33 @@ def showVolumeRendering(volumeNode, show=True, presetName=None):
       displayNode.SetVisibility(False)
 
 def reset3DView(viewID=0):
+  """Centers the selected 3D view on the currently displayed content.
+  :param viewID: integer index of the 3D view node. Valid values are between 0 and `slicer.app.layoutManager().threeDViewCount-1`.
+  """
   threeDWidget = slicer.app.layoutManager().threeDWidget(viewID)
   threeDView = threeDWidget.threeDView()
   threeDView.resetFocalPoint()
 
 def setViewLayout(layoutName):
+  """Set view arrangement, wchich specifies what kind of views are rendered, and their location and sizes.
+
+  :param layoutName: String that specifies the layout name. Most commonly used layouts are:
+        `FourUp`, `Conventional`, `OneUp3D`, `OneUpRedSlice`, `OneUpYellowSlice`,
+    `OneUpPlot`, `OneUpGreenSlice`, `Dual3D`, `FourOverFour`, `DicomBrowser`.
+
+  Get full list of layout names::
+
+    for att in dir(slicer.vtkMRMLLayoutNode):
+      if att.startswith("SlicerLayout"):
+        print(att[12:-4])
+
+  """
   layoutId = eval("slicer.vtkMRMLLayoutNode.SlicerLayout"+layoutName+"View")
   slicer.app.layoutManager().setLayout(layoutId)
 
 def showSliceViewAnnotations(show):
+    """Show/hide corner annotations (node name, patient name, etc.) in all slice views.
+    """
     # Disable slice annotations immediately
     slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.sliceViewAnnotationsEnabled=show
     slicer.modules.DataProbeInstance.infoWidget.sliceAnnotations.updateSliceViewFromGUI()

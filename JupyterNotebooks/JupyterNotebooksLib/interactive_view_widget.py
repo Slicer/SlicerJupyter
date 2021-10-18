@@ -2,12 +2,12 @@ import qt, slicer
 from ipycanvas import Canvas
 
 class ViewInteractiveWidget(Canvas):
-  """Remote controller for Slicer viewers."""
+  """Remote controller for Slicer viewers.
+  :param layoutLabel: specify view by label (displayed in the view's header in the layout, such as R, Y, G, 1)
+  :param renderView: specify view by renderView object (ctkVTKRenderView).
+  """
 
   def __init__(self, layoutLabel=None, renderView=None, **kwargs):
-    """View can be either identified by layoutLabel (label displayed in the view's header
-    in the layout, such as R, Y, G, 1) or by renderView (ctkVTKRenderView object).
-    """
     from ipyevents import Event
     #import time
 
@@ -138,6 +138,7 @@ class ViewInteractiveWidget(Canvas):
     self.ageOfProcessedMessages = []
 
   def setQuickRenderDelay(self, delaySec):
+    """Delay this much after a view update before sending a low-resolution update."""
     if delaySec<self.quickRenderDelaySecRange[0]:
         delaySec = self.quickRenderDelaySecRange[0]
     elif delaySec>self.quickRenderDelaySecRange[1]:
@@ -146,24 +147,27 @@ class ViewInteractiveWidget(Canvas):
     self.quickRenderRequestTimer.setInterval(self.quickRenderDelaySec*1000)
 
   def setFullRenderDelay(self, delaySec):
+    """Delay this much after a view update before sending a full-resolution update."""
     self.fullRenderRequestTimer.setInterval(delaySec)
 
   def getImage(self, compress=True, forceRender=True):
-      from ipywidgets import Image
-      slicer.app.processEvents()
-      if forceRender:
-        self.renderView.forceRender()
-      screenshot = self.renderView.grab()
-      bArray = qt.QByteArray()
-      buffer = qt.QBuffer(bArray)
-      buffer.open(qt.QIODevice.WriteOnly)
-      if compress:
-        screenshot.save(buffer, "JPG", self.compressionQuality)
-      else:
-        screenshot.save(buffer, "PNG")
-      return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
+    """Retrieve an image from the view."""
+    from ipywidgets import Image
+    slicer.app.processEvents()
+    if forceRender:
+      self.renderView.forceRender()
+    screenshot = self.renderView.grab()
+    bArray = qt.QByteArray()
+    buffer = qt.QBuffer(bArray)
+    buffer.open(qt.QIODevice.WriteOnly)
+    if compress:
+      screenshot.save(buffer, "JPG", self.compressionQuality)
+    else:
+      screenshot.save(buffer, "PNG")
+    return Image(value=bArray.data(), width=screenshot.width(), height=screenshot.height())
 
   def fullRender(self):
+    """Perform a full render now."""
     try:
       import time
       self.fullRenderRequestTimer.stop()
@@ -174,12 +178,13 @@ class ViewInteractiveWidget(Canvas):
       self.error = str(e)
 
   def sendPendingMouseMoveEvent(self):
-      if self.lastMouseMoveEvent is not None:
-        self.updateInteractorEventData(self.lastMouseMoveEvent)
-        self.interactor.MouseMoveEvent()
-        self.lastMouseMoveEvent = None
+    if self.lastMouseMoveEvent is not None:
+      self.updateInteractorEventData(self.lastMouseMoveEvent)
+      self.interactor.MouseMoveEvent()
+      self.lastMouseMoveEvent = None
 
   def quickRender(self):
+    """Perform a quick render now."""
     try:
       import time
       self.fullRenderRequestTimer.stop()
