@@ -27,12 +27,13 @@ The module is originally developed by Andras Lasso.
 
 class SlicerJupyterServerHelper:
   def installRequiredPackages(self, force=False):
-
+    """Installed required Python packages for running a Jupyter serverin Slicer's Python environment."""
     # Need to install if forced or any packages cannot be imported
     needToInstall = force
     if not needToInstall:
       try:
         import jupyter
+        import jupyterlab
         import ipywidgets
         import pandas
         import ipyevents
@@ -50,9 +51,7 @@ class SlicerJupyterServerHelper:
         # PIL may be corrupted on linux, reinstall from pillow
         slicer.util.pip_install('--upgrade pillow --force-reinstall')
 
-      slicer.util.pip_install("jupyter ipywidgets pandas ipyevents ipycanvas --no-warn-script-location")
-      slicer.util._executePythonModule("jupyter", "nbextension enable --py widgetsnbextension".split(" "))
-      slicer.util._executePythonModule("jupyter", "nbextension enable --py ipyevents".split(" "))
+      slicer.util.pip_install("jupyter jupyterlab ipywidgets pandas ipyevents ipycanvas --no-warn-script-location")
 
     # Install Slicer Jupyter kernel
     # Create Slicer kernel

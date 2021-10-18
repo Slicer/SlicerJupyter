@@ -414,13 +414,20 @@ bool qSlicerJupyterKernelModule::installInternalJupyterServer()
 }
 
 //-----------------------------------------------------------------------------
-bool qSlicerJupyterKernelModule::startInternalJupyterServer(QString notebookDirectory, bool detached/*=false*/)
+bool qSlicerJupyterKernelModule::startInternalJupyterServer(QString notebookDirectory, bool detached/*=false*/, bool classic/*=false*/)
 {
   Q_D(qSlicerJupyterKernelModule);
   QString pythonExecutable = QStandardPaths::findExecutable("PythonSlicer");
   d->InternalJupyterServer.setProgram(pythonExecutable);
   QStringList args;
-  args << "-m" << "notebook";
+  if (classic)
+  {
+    args << "-m" << "notebook";
+  }
+  else
+  {
+    args << "-m" << "jupyter" << "lab";
+  }
   args << "--notebook-dir" << notebookDirectory;
   d->InternalJupyterServer.setArguments(args);
   bool success = false;

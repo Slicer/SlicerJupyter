@@ -22,26 +22,19 @@ When you click on the link, Binder launches 3D Slicer with SlicerJupyter extensi
 * Switch to `JupyterKernel` module (open the module finder by click the "Search" icon on the toolbar, or hitting Ctrl/Cmd-F, then type its name)
 * Click `Start Jupyter server` button
 
-### JupyterLab
+### Run classic notebook interface
 
-Installation (in addition to the steps above):
-- Install [node.js](https://nodejs.org/en/download/). Make sure it is in a location that is included in the path (or copy node.js files into the same folder as SlicerApp-real executable)
-- Run these commands in Slicer's Python console (hit Ctrl-3 to show it):
-```
-pip_install('jupyterlab')
-slicer.util._executePythonModule('jupyter',['labextension','install','@jupyter-widgets/jupyterlab-manager','ipycanvas','ipyevents'])
-```
+Follow all the installation steps above (start Jupyter server once with the default JupyterLab user interface), then restart Slicer. After this, a classic notebook server can be started by typing this into the Python console in Slicer:
 
-Launch JupyterLab:
 ```
-slicer.util._executePythonModule('jupyter',['lab'])
+slicer.util._executePythonModule('notebook',['--notebook-dir', 'some/path/to/workspace'])
 ```
 
 ### Using external Jupyter server
 
 Slicer's Python kernel can be used in Jupyter servers in external Python environments. Kernel specification installation command is displayed in `Jupyter server in external Python environment` section in `JupyterKernel` module.
 
-You need to install and set up these Python packages: `jupyter ipywidgets pandas ipyevents ipycanvas` (see how it is done for Slicer's Python environment [here](https://github.com/Slicer/SlicerJupyter/blob/master/JupyterNotebooks/JupyterNotebooks.py#L29-L62)).
+You need to install and set up these Python packages: `jupyter jupyterlab ipywidgets pandas ipyevents ipycanvas`.
 
 ## Option 3. Run using docker on your computer
 

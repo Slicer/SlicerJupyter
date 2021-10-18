@@ -67,7 +67,8 @@ public:
 
   /// Start Jupyter server in Slicer's Python environment.
   /// Set detached=false to run the server as a child process and shutdown along with the application.
-  Q_INVOKABLE virtual bool startInternalJupyterServer(QString notebookDirectory, bool detached=true);
+  /// Set classic=true to launch a classic notebook server instead of JupyterLab.
+  Q_INVOKABLE virtual bool startInternalJupyterServer(QString notebookDirectory, bool detached=true, bool classic=false);
 
   /// Stop Jupyter server in Slicer's Python environment.
   /// Currently it does not work (it only terminates the launcher and not the actual application).
