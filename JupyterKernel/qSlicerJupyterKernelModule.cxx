@@ -351,7 +351,9 @@ bool qSlicerJupyterKernelModule::slicerKernelSpecInstallCommandArgs(QString& exe
   }
 
   executable = "jupyter-kernelspec";
-  args = QStringList() << "install" << this->resourceFolderPath() << "--replace" << "--user";
+  args = QStringList() << "install"
+    << (QString("\"") + this->resourceFolderPath() + QString("\""))
+    << "--replace" << "--user";
 
   return true;
 }
