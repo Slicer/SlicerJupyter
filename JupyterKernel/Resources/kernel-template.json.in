@@ -5,6 +5,6 @@
         "{slicer_launcher_executable}",
         "--no-splash",
         "--python-code",
-        "connection_file=r'{connection_file}'; print('Jupyter connection file: ['+connection_file+']'); slicer.modules.jupyterkernel.startKernel(connection_file);slicer.util.mainWindow().showMinimized()"
+        "connection_file=r'{connection_file}';print('JupyterConnectionFile:['+connection_file+']');slicer.modules.jupyterkernel.startKernel(connection_file);slicer.util.mainWindow().showMinimized()"
     ]
 }
