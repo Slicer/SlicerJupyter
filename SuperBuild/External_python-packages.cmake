@@ -37,7 +37,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(python_packages_DIR "${CMAKE_BINARY_DIR}/python-packages-install")
   file(TO_NATIVE_PATH ${python_packages_DIR} python_packages_DIR_NATIVE_DIR)
 
-  set(python_sitepackages_DIR "${CMAKE_BINARY_DIR}/python-packages-install/lib/python3.6/site-packages")
+  set(python_sitepackages_DIR "${CMAKE_BINARY_DIR}/python-packages-install/${PYTHON_SITE_PACKAGES_SUBDIR}")
   file(TO_NATIVE_PATH ${python_sitepackages_DIR} python_sitepackages_DIR_NATIVE_DIR)
 
 
