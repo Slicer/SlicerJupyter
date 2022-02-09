@@ -282,9 +282,13 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
                                   std::move(interpreter),
                                   make_xSlicerServer,
                                   std::move(hist),
-                                  nullptr, // console logger
-                                  xpyt::make_python_debugger,
-                                  debugger_config);
+                                  nullptr // console logger
+      
+                                  // debugger is disabled for now
+                                  // (see https://github.com/Slicer/SlicerJupyter/issues/69)
+                                  // , xpyt::make_python_debugger, debugger_config
+
+                                  );
 
     d->Kernel->start();
 
@@ -375,51 +379,6 @@ bool qSlicerJupyterKernelModule::installInternalJupyterServer()
   context.evalScript(QString("success=False; import JupyterNotebooks; server=JupyterNotebooks.SlicerJupyterServerHelper(); success=server.installRequiredPackages()"));
   bool success = context.getVariable("success").toBool();
   return success;
-  /*
-
-  QString kernelspecExecutable;
-  QStringList args;
-  if (!this->slicerKernelSpecInstallCommandArgs(kernelspecExecutable, args))
-  {
-    qWarning() << Q_FUNC_INFO << " failed: slicerKernelSpecInstallCommandArgs failed to determine install command";
-    return false;
-  }
-
-  QString kernelspecExecutablePath = pythonScriptsFolder + "/" + kernelspecExecutable;
-
-  qDebug() << Q_FUNC_INFO << ": launching " << kernelspecExecutablePath << " " << args.join(" ");
-
-  QProcess kernelSpecProcess;
-  qSlicerApplication* app = qSlicerApplication::application();
-  kernelSpecProcess.setProcessEnvironment(app->startupEnvironment());
-  kernelSpecProcess.setProgram(kernelspecExecutablePath);
-  kernelSpecProcess.setArguments(args);
-  kernelSpecProcess.start();
-  bool finished = kernelSpecProcess.waitForFinished();
-  QString output = QString(kernelSpecProcess.readAllStandardOutput());
-  QString errorOutput = QString(kernelSpecProcess.readAllStandardError());
-  if (!output.isEmpty())
-  {
-    qDebug() << "Kernelspec install output: " << output;
-  }
-  if (!errorOutput.isEmpty())
-  {
-    qWarning() << "Kernelspec install error output: " << errorOutput;
-  }
-  if (!finished)
-  {
-    qWarning() << Q_FUNC_INFO << " failed: error launching process " << kernelspecExecutablePath
-      << " (code = " << kernelSpecProcess.error() << ")";
-    return false;
-  }
-  if (kernelSpecProcess.exitCode() != 0)
-  {
-    qWarning() << Q_FUNC_INFO << " failed: process " << kernelspecExecutablePath
-      << " returned with exit code " << kernelSpecProcess.exitCode();
-    return false;
-  }
-  return true;
-  */
 }
 
 //-----------------------------------------------------------------------------

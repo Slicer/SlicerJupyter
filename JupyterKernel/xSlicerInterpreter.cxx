@@ -18,8 +18,7 @@ xSlicerInterpreter::xSlicerInterpreter()
   // Disable built-in output and display redirection, as it would prevent
   // console output and execution results from appearing in Slicer's
   // Python console and application log.
-  // We call publish_stream instead when PythonQt emits outputs and
-  // use a custom display hook.
+  // We call publish_stream instead when PythonQt emits outputs.
 {
   // GIL is already released, so we need to prevent
   // the interpreter from attempting to release it again.
