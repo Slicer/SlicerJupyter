@@ -305,7 +305,7 @@ class ViewLightboxDisplay(object):
 
   def _repr_mimebundle_(self, include=None, exclude=None):
     import base64
-    return { self.dataType: base64.b64encode(self.dataValue) }
+    return { self.dataType: base64.b64encode(self.dataValue).decode() }
 
 class MatplotlibDisplay(object):
   """Display matplotlib plot in a notebook cell.
@@ -349,7 +349,7 @@ class MatplotlibDisplay(object):
 
   def _repr_mimebundle_(self, include=None, exclude=None):
     import base64
-    return { self.dataType: base64.b64encode(self.dataValue) }
+    return { self.dataType: base64.b64encode(self.dataValue).decode() }
 
 # Utility functions for customizing what is shown in views
 

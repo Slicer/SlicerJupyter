@@ -113,82 +113,10 @@ def localPath(filename=None):
     return os.path.join(notebookDir, filename)
 
 def notebookPath(verbose=False):
-  """Returns the absolute path of the Notebook or None if it cannot be determined
-
-  .. warning:: works only when the security is token-based and there is also no password.
-
+  """Returns the absolute path of the Notebook.
+  It uses the working directory path where the kernel has started in.
   """
-  # Code is extracted from notebook\notebookapp.py to avoid requiring installation of notebook on server
-
-  import urllib.request
-  import json
-  import io, os, re, sys
-
-  def check_pid(pid):
-
-    def _check_pid_win32(pid):
-      import ctypes
-      # OpenProcess returns 0 if no such process (of ours) exists
-      # positive int otherwise
-      return bool(ctypes.windll.kernel32.OpenProcess(1,0,pid))
-
-    def _check_pid_posix(pid):
-      """Copy of IPython.utils.process.check_pid"""
-      try:
-        os.kill(pid, 0)
-      except OSError as err:
-        if err.errno == errno.ESRCH:
-          return False
-        elif err.errno == errno.EPERM:
-          # Don't have permission to signal the process - probably means it exists
-          return True
-        raise
-      else:
-        return True
-
-    if sys.platform == 'win32':
-      return _check_pid_win32(pid)
-    else:
-      return _check_pid_posix(pid)
-
-  def list_running_servers():
-    # Iterate over the server info files of running notebook servers.
-    # Given a runtime directory, find nbserver-* files in the security directory,
-    # and yield dicts of their information, each one pertaining to
-    # a currently running notebook server instance.
-    runtime_dir = os.path.dirname(connection_file)
-
-    for file_name in os.listdir(runtime_dir):
-      if not re.match('nbserver-(.+).json', file_name):
-        continue
-      if verbose: print(file_name)
-      with io.open(os.path.join(runtime_dir, file_name), encoding='utf-8') as f:
-        info = json.load(f)
-      # Simple check whether that process is really still running
-      if ('pid' in info) and check_pid(info['pid']):
-        yield info
-
-  connection_file = slicer.modules.jupyterkernel.connectionFile
-
-  kernel_id = connection_file.split('-', 1)[1].split('.')[0]
-
-  for srv in list_running_servers():
-    try:
-      if verbose: print(srv)
-      if srv['token']=='' and not srv['password']:  # No token and no password, ahem...
-        req = urllib.request.urlopen(srv['url']+'api/sessions')
-      else:
-        req = urllib.request.urlopen(srv['url']+'api/sessions?token='+srv['token'])
-      sessions = json.load(req)
-      if verbose: print("sessions: "+repr(sessions))
-      for sess in sessions:
-        if sess['kernel']['id'] == kernel_id:
-          return os.path.join(srv['notebook_dir'],sess['notebook']['path'])
-    except Exception as e:
-      if verbose: print("exception: "+str(e))
-      pass  # There may be stale entries in the runtime directory
-
-  return None
+  return slicer.app.startupWorkingPath
 
 def notebookSaveCheckpoint():
     """Save a checkpoint of current notebook. Returns True on success."""

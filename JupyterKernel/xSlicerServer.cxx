@@ -12,16 +12,14 @@
 // zmq includes
 #include <zmq_addon.hpp>
 
-// xeus includes
-#include <xeus/xserver_zmq.hpp>
-
 // Qt includes
 #include <QDebug>
 #include <QTimer>
 
 xSlicerServer::xSlicerServer(zmq::context_t& context,
-                           const xeus::xconfiguration& c)
-    : xserver_zmq(context, c)
+                           const xeus::xconfiguration& c,
+                           nl::json::error_handler_t eh)
+    : xserver_zmq(context, c, eh)
 {
   // 10ms interval is short enough so that users will not notice significant latency
   // yet it is long enough to minimize CPU load caused by polling.
@@ -37,7 +35,7 @@ xSlicerServer::~xSlicerServer()
   delete m_pollTimer;
 }
 
-void xSlicerServer::start_impl(zmq::multipart_t& message)
+void xSlicerServer::start_impl(xeus::xpub_message message)
 {
     qDebug() << "Starting Jupyter kernel server";
 
@@ -48,7 +46,7 @@ void xSlicerServer::start_impl(zmq::multipart_t& message)
 
     m_pollTimer->start();
 
-    publish(message, xeus::channel::SHELL);
+    publish(std::move(message), xeus::channel::SHELL);
 }
 
 void xSlicerServer::stop_impl()
@@ -67,10 +65,11 @@ void xSlicerServer::stop_impl()
   }
 }
 
-std::unique_ptr<xeus::xserver> make_xSlicerServer(zmq::context_t& context,
-                                                  const xeus::xconfiguration& config)
+std::unique_ptr<xeus::xserver> make_xSlicerServer(xeus::xcontext& context,
+                                                  const xeus::xconfiguration& config,
+                                                  nl::json::error_handler_t eh)
 {
-    return std::make_unique<xSlicerServer>(context, config);
+  return std::make_unique<xSlicerServer>(context.get_wrapped_context<zmq::context_t>(), config, eh);
 }
 
 void xSlicerServer::setPollIntervalSec(double intervalSec)

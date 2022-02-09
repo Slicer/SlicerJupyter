@@ -21,7 +21,8 @@ public:
     using socket_notifier_ptr = QSharedPointer<QSocketNotifier>;
 
     xSlicerServer(zmq::context_t& context,
-                 const xeus::xconfiguration& config);
+                 const xeus::xconfiguration& config,
+                 nl::json::error_handler_t eh);
 
     virtual ~xSlicerServer();
 
@@ -30,7 +31,7 @@ public:
 
 protected:
 
-    void start_impl(zmq::multipart_t& message) override;
+    void start_impl(xeus::xpub_message message) override;
     void stop_impl() override;
 
     // Socket notifier for stdin socket continuously generates signals
@@ -42,7 +43,8 @@ protected:
 };
 
 Q_SLICER_QTMODULES_JUPYTERKERNEL_EXPORT
-std::unique_ptr<xeus::xserver> make_xSlicerServer(zmq::context_t& context,
-                                                  const xeus::xconfiguration& config);
+std::unique_ptr<xeus::xserver> make_xSlicerServer(xeus::xcontext& context,
+                                                  const xeus::xconfiguration& config,
+                                                  nl::json::error_handler_t eh);
 
 #endif

@@ -33,6 +33,12 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     QUIET
     )
 
+  ExternalProject_SetIfNotDefined(
+    ${CMAKE_PROJECT_NAME}_xeus_python_shell_VERSION
+    "0.2.0"
+    QUIET
+    )
+
   # Alternative python prefix for installing extension python packages
   set(python_packages_DIR "${CMAKE_BINARY_DIR}/python-packages-install")
   file(TO_NATIVE_PATH ${python_packages_DIR} python_packages_DIR_NATIVE_DIR)
@@ -54,6 +60,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
         ${wrapper_script} ${PYTHON_EXECUTABLE} -m pip install
           jedi==${${CMAKE_PROJECT_NAME}_jedi_VERSION}
           argon2-cffi==${${CMAKE_PROJECT_NAME}_argon2_cffi_VERSION}
+          xeus-python-shell==${${CMAKE_PROJECT_NAME}_xeus_python_shell_VERSION}
           ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
           --force-reinstall
