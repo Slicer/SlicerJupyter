@@ -186,10 +186,12 @@ class AppWindow(IFrame):
         :param height: image height in pixels (by default: 1024).
         :param scale: if specified then width and heigh is scaled by this value.
         """
-        if width is None:
-            width = 1280
-        if height is None:
-            height = 1024
+        if width is None or height is None:
+            displaySize = slicer.app.desktop().availableGeometry().size()
+            if width is None:
+                width = displaySize.width()
+            if height is None:
+                height = displaySize.height()
         if scale is not None:
             width *= scale
             height *= scale
