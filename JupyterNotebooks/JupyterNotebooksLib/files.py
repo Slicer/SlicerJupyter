@@ -106,7 +106,7 @@ def localPath(filename=None):
   Example: `slicer.util.saveNode(modelNode, slicernb.localPath("MyModel.ply"))`
   """
   import os
-  notebookDir = os.path.dirname(notebookPath())
+  notebookDir = slicer.app.startupWorkingPath
   if not filename:
     return notebookDir
   else:
@@ -114,9 +114,26 @@ def localPath(filename=None):
 
 def notebookPath(verbose=False):
   """Returns the absolute path of the Notebook.
-  It uses the working directory path where the kernel has started in.
   """
-  return slicer.app.startupWorkingPath
+  from jupyter_server import serverapp as app
+  import json
+  import os
+  import urllib
+  connection_file = os.path.basename(slicer.modules.jupyterkernel.connectionFile)
+  kernel_id = connection_file.split('-', 1)[1].split('.')[0]
+  for srv in app.list_running_servers():
+    try:
+      if srv['token']=='' and not srv['password']:  # No token and no password, ahem...
+        req = urllib.request.urlopen(srv['url']+'api/sessions')
+      else:
+        req = urllib.request.urlopen(srv['url']+'api/sessions?token='+srv['token'])
+      sessions = json.load(req)
+      for sess in sessions:
+        if sess['kernel']['id'] == kernel_id:
+          return os.path.join(srv['root_dir'],sess['notebook']['path'])
+    except:
+     pass  # There may be stale entries in the runtime directory
+  return None
 
 def notebookSaveCheckpoint():
     """Save a checkpoint of current notebook. Returns True on success."""
