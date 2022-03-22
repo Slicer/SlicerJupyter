@@ -24,6 +24,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     QUIET
     )
 
+  # Important: When updating the version of xeus consider also updating
+  #            the "fix_rpath" step below.
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
     "2.3.1"
@@ -87,8 +89,12 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
   if(APPLE)
+     # This corresponds to the XEUS_BINARY_CURRENT value found in the "xeus.hpp" header.
+     # See https://github.com/jupyter-xeus/xeus/blob/master/include/xeus/xeus.hpp
      ExternalProject_Add_Step(${proj} fix_rpath
-       COMMAND install_name_tool -id ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.1.dylib ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.1.dylib
+       COMMAND install_name_tool -id
+         ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.6.dylib
+         ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.6.dylib
        DEPENDEES install
        )
   endif()
