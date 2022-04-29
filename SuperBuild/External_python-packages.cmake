@@ -50,8 +50,6 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(_no_binary "")
 
   # Install jedi and requirements
-  # note: --force-reinstall ensures the python dependency is installed within
-  #       this library's prefix for packaging.
   set(_install_jedi COMMAND ${CMAKE_COMMAND}
       -E env
         PYTHONNOUSERSITE=1
@@ -63,7 +61,6 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
           xeus-python-shell==${${CMAKE_PROJECT_NAME}_xeus_python_shell_VERSION}
           ${_no_binary}
           --prefix ${python_packages_DIR_NATIVE_DIR}
-          --force-reinstall
           --no-warn-script-location
     )
 
