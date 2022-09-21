@@ -35,7 +35,7 @@ if(NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_xeus_python_shell_VERSION
-    "0.2.0"
+    "0.5.0"
     QUIET
     )
 
