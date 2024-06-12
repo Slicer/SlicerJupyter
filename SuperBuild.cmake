@@ -19,6 +19,7 @@ set(proj ${SUPERBUILD_TOPLEVEL_PROJECT})
 # Project dependencies
 set(${proj}_DEPENDS
    xeus
+   xeus-zmq
    xeus-python
    pybind11
    python-packages

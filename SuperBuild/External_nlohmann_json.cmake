@@ -28,7 +28,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
      # version < v3.8.0 has build error in xeus-python on Windows (ambiguous conversion)
      # version == v3.9.1 has build error on linux (nlohmann_json not found)
-    "v3.8.0"
+    "v3.11.3"
     QUIET
     )
 
@@ -60,6 +60,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_INSTALL_LIBDIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR} # Skip default initialization by GNUInstallDirs CMake module
       # Options
       -DBUILD_TESTING:BOOL=OFF
+      -DJSON_BuildTests:BOOL=OFF
     INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDS}
