@@ -2,7 +2,7 @@
 set(proj xeus-python)
 
 # Set dependency list
-set(${proj}_DEPENDS nlohmann_json xtl ZeroMQ cppzmq pybind11 pybind11_json xeus)
+set(${proj}_DEPENDS xeus xeus-zmq nlohmann_json ZeroMQ cppzmq pybind11 pybind11_json)
 
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
@@ -26,13 +26,13 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "0.14.3"
+    "0.17.0"
     QUIET
     )
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
- 
+
   set(EXTERNAL_PROJECT_CMAKE_CACHE_ARGS)
   if(UNIX)
     list(APPEND EXTERNAL_PROJECT_CMAKE_CACHE_ARGS
@@ -75,17 +75,17 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DBUILD_TESTING:BOOL=OFF
       # Dependencies
       -Dxeus_DIR:PATH=${xeus_DIR}
+      -Dxeus-zmq_DIR:PATH=${xeus-zmq_DIR}
       -Dpybind11_DIR:PATH=${pybind11_DIR}
       -Dpybind11_json_DIR:PATH=${pybind11_json_DIR}
       -Dnlohmann_json_DIR:PATH=${nlohmann_json_DIR}
-      -Dxtl_DIR:PATH=${xtl_DIR}
       -DZeroMQ_DIR:PATH=${ZeroMQ_DIR}
       -Dcppzmq_DIR:PATH=${cppzmq_DIR}
       -DOPENSSL_INCLUDE_DIR:PATH=${OPENSSL_INCLUDE_DIR}
 
       -DPYTHON_EXECUTABLE:PATH=${PYTHON_EXECUTABLE}
       -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
-      -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR} 
+      -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
 
       ${EXTERNAL_PROJECT_CMAKE_CACHE_ARGS}
     INSTALL_COMMAND ""

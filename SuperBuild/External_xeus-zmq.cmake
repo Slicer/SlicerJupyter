@@ -1,8 +1,7 @@
-
-set(proj xeus)
+set(proj xeus-zmq)
 
 # Set dependency list
-set(${proj}_DEPENDS nlohmann_json)
+set(${proj}_DEPENDS xeus ZeroMQ cppzmq nlohmann_json)
 
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
@@ -12,28 +11,43 @@ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 endif()
 
 # Sanity checks
-if(DEFINED xeus_DIR AND NOT EXISTS ${xeus_DIR})
-  message(FATAL_ERROR "xeus_DIR variable is defined but corresponds to nonexistent directory")
+if(DEFINED xeus-zmq_DIR AND NOT EXISTS ${xeus-zmq_DIR})
+  message(FATAL_ERROR "xeus-zmq_DIR variable is defined but corresponds to nonexistent directory")
 endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/jupyter-xeus/xeus.git"
+    "${EP_GIT_PROTOCOL}://github.com/jupyter-xeus/xeus-zmq.git"
     QUIET
     )
 
-  # Important: When updating the version of xeus consider also updating
+  # Important: When updating the version of xeus-zmq consider also updating
   #            the "fix_rpath" step below.
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "5.1.0"
+    "3.0.0"
     QUIET
     )
 
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+
+  set(EXTERNAL_PROJECT_CMAKE_CACHE_ARGS)
+  if(UNIX)
+    list(APPEND EXTERNAL_PROJECT_CMAKE_CACHE_ARGS
+      -DOPENSSL_SSL_LIBRARY:FILEPATH=${OPENSSL_SSL_LIBRARY}
+      -DOPENSSL_CRYPTO_LIBRARY:FILEPATH=${OPENSSL_CRYPTO_LIBRARY}
+      )
+  else()
+    list(APPEND EXTERNAL_PROJECT_CMAKE_CACHE_ARGS
+      -DLIB_EAY_DEBUG:FILEPATH=${LIB_EAY_DEBUG}
+      -DLIB_EAY_RELEASE:FILEPATH=${LIB_EAY_RELEASE}
+      -DSSL_EAY_DEBUG:FILEPATH=${SSL_EAY_DEBUG}
+      -DSSL_EAY_RELEASE:FILEPATH=${SSL_EAY_RELEASE}
+      )
+  endif()
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
@@ -55,13 +69,18 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
       # Install directories
-      -Dxeus_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
-      -Dxeus_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dxeus-zmq_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
+      -Dxeus-zmq_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       -DCMAKE_INSTALL_LIBDIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR} # Skip default initialization by GNUInstallDirs CMake module
       # Options
       -DBUILD_TESTING:BOOL=OFF
       # Depdendencies
+      -Dxeus_DIR:PATH=${xeus_DIR}
       -Dnlohmann_json_DIR:PATH=${nlohmann_json_DIR}
+      -Dxtl_DIR:PATH=${xtl_DIR}
+      -DZeroMQ_DIR:PATH=${ZeroMQ_DIR}
+      -Dcppzmq_DIR:PATH=${cppzmq_DIR}
+      -DOPENSSL_INCLUDE_DIR:PATH=${OPENSSL_INCLUDE_DIR}
       ${EXTERNAL_PROJECT_CMAKE_CACHE_ARGS}
     INSTALL_COMMAND ""
     DEPENDS
@@ -69,16 +88,16 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     )
   set(${proj}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
-  if(APPLE)
-     # This corresponds to the XEUS_BINARY_CURRENT value found in the "xeus.hpp" header.
-     # See https://github.com/jupyter-xeus/xeus/blob/master/include/xeus/xeus.hpp
-     ExternalProject_Add_Step(${proj} fix_rpath
-       COMMAND install_name_tool -id
-         ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.6.dylib
-         ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.6.dylib
-       DEPENDEES install
-       )
-  endif()
+#  if(APPLE)
+#     # This corresponds to the XEUS_BINARY_CURRENT value found in the "xeus.hpp" header.
+#     # See https://github.com/jupyter-xeus/xeus/blob/master/include/xeus/xeus.hpp
+#     ExternalProject_Add_Step(${proj} fix_rpath
+#       COMMAND install_name_tool -id
+#         ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.6.dylib
+#         ${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}/libxeus.6.dylib
+#       DEPENDEES install
+#       )
+#  endif()
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})
