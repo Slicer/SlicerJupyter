@@ -7,6 +7,7 @@ string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 find_package(xeus REQUIRED)
 find_package(xeus-python REQUIRED)
+find_package(cppzmq REQUIRED)
 find_package(pybind11 REQUIRED)
 
 #-----------------------------------------------------------------------------
@@ -30,7 +31,7 @@ set(MODULE_SRCS
   xSlicerInterpreter.cxx
   xSlicerInterpreter.h
   xSlicerServer.cxx
-  xSlicerServer.h  
+  xSlicerServer.h
   )
 
 set(MODULE_MOC_SRCS
@@ -46,6 +47,7 @@ set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   xeus
   xeus-python
+  cppzmq
   )
 
 set(MODULE_RESOURCES

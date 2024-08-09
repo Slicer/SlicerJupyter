@@ -48,6 +48,9 @@
 #include "xeus/xkernel.hpp"
 #include "xeus/xkernel_configuration.hpp"
 #include "xeus-python/xdebugger.hpp"
+#include "xeus-zmq/xserver_zmq.hpp"
+#include "xeus-zmq/xzmq_context.hpp"
+#include "zmq.hpp"
 
 #include "xSlicerInterpreter.h"
 #include "xSlicerServer.h"
@@ -271,13 +274,13 @@ void qSlicerJupyterKernelModule::startKernel(const QString& connectionFile)
     using history_manager_ptr = std::unique_ptr<xeus::xhistory_manager>;
     history_manager_ptr hist = xeus::make_in_memory_history_manager();
 
-    auto context = xeus::make_context<zmq::context_t>();
+    auto context = xeus::make_zmq_context();
 
     nl::json debugger_config;
     debugger_config["python"] = QStandardPaths::findExecutable("PythonSlicer").toStdString();
 
     d->Kernel = new xeus::xkernel(d->Config,
-                                  "slicer",
+                                  "slicer", // user name
                                   std::move(context),
                                   std::move(interpreter),
                                   make_xSlicerServer,

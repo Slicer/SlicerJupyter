@@ -2,8 +2,9 @@
 #define XSLICER_SERVER_HPP
 
 // xeus includes
-#include <xeus/xserver_zmq.hpp>
+#include <xeus-zmq/xserver_zmq.hpp>
 #include <xeus/xkernel_configuration.hpp>
+#include <zmq.hpp>
 
 #include "qSlicerJupyterKernelModuleExport.h"
 
@@ -20,7 +21,7 @@ class xSlicerServer : public xeus::xserver_zmq
 public:
     using socket_notifier_ptr = QSharedPointer<QSocketNotifier>;
 
-    xSlicerServer(zmq::context_t& context,
+    xSlicerServer(xeus::xcontext& context,
                  const xeus::xconfiguration& config,
                  nl::json::error_handler_t eh);
 
@@ -33,6 +34,8 @@ protected:
 
     void start_impl(xeus::xpub_message message) override;
     void stop_impl() override;
+
+    void poll();
 
     // Socket notifier for stdin socket continuously generates signals
     // on Windows and on some Linux distributions, which would cause 100% CPU

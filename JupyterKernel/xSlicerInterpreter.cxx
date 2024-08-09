@@ -51,21 +51,17 @@ void xSlicerInterpreter::configure_impl()
   slicer_module.attr("xeusPythonDisplayHook") = m_displayhook;
 }
 
-nl::json xSlicerInterpreter::execute_request_impl(int execution_counter,
+void xSlicerInterpreter::execute_request_impl(send_reply_callback cb,
+  int execution_counter,
   const std::string& code,
-  bool store_history,
-  bool silent,
-  nl::json user_expressions,
-  bool allow_stdin)
+  xeus::execute_request_config config,
+  nl::json user_expressions)
 {
   if (m_print_debug_output)
   {
     std::cout << "Received execute_request" << std::endl;
     std::cout << "execution_counter: " << execution_counter << std::endl;
     std::cout << "code: " << code << std::endl;
-    std::cout << "store_history: " << store_history << std::endl;
-    std::cout << "silent: " << silent << std::endl;
-    std::cout << "allow_stdin: " << allow_stdin << std::endl;
     std::cout << std::endl;
   }
 
@@ -79,20 +75,19 @@ nl::json xSlicerInterpreter::execute_request_impl(int execution_counter,
     m_print_debug_output = true;
     pub_data["text/plain"] = "Kernel debug info print enabled.";
     result["status"] = "ok";
+    // TODO: publish data and report result
   }
   else if (qscode.endsWith(QString("__kernel_debug_disable()")))
   {
     m_print_debug_output = false;
     pub_data["text/plain"] = "Kernel debug info print disabled.";
     result["status"] = "ok";
+    // TODO: publish data and report result
   }
   else
   {
-    return xpyt::interpreter::execute_request_impl(execution_counter, code, store_history, silent, user_expressions, allow_stdin);
+    return xpyt::interpreter::execute_request_impl(cb, execution_counter, code, config, user_expressions);
   }
-
-  publish_execution_result(execution_counter, std::move(pub_data), nl::json::object());
-  return result;
 }
 
 nl::json xSlicerInterpreter::complete_request_impl(const std::string& code,

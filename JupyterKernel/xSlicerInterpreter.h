@@ -25,12 +25,11 @@ private:
 
     void configure_impl() override;
 
-    nl::json execute_request_impl(int execution_counter,
-                               const std::string& code,
-                               bool store_history,
-                               bool silent,
-                               nl::json user_expressions,
-                               bool allow_stdin) override;
+    void execute_request_impl(send_reply_callback cb,
+      int execution_counter,
+      const std::string& code,
+      xeus::execute_request_config config,
+      nl::json user_expressions) override;
 
     nl::json complete_request_impl(const std::string& code,
                                 int cursor_pos) override;

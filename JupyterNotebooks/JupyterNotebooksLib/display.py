@@ -215,7 +215,7 @@ class View3DDisplay(object):
     widget = slicer.app.layoutManager().threeDWidget(viewID)
     view = widget.threeDView()
     if orientation is not None:
-      camera = view.interactorStyle().GetCameraNode().GetCamera()
+      camera = slicer.modules.cameras.logic().GetViewActiveCameraNode(view.mrmlViewNode()).GetCamera()
       cameraToWorld = vtk.vtkTransform()
       cameraToWorld.RotateX(90)
       cameraToWorld.RotateY(180)
