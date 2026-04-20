@@ -57,7 +57,11 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       #-Dpybind11_INSTALL_RUNTIME_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       #-Dpybind11_INSTALL_LIBRARY_DIR:STRING=${Slicer_INSTALL_THIRDPARTY_LIB_DIR}
       # Options
-      -DPYBIND11_MASTER_PROJECT:BOOL=ON
+      # PYBIND11_MASTER_PROJECT intentionally NOT pre-set: pybind11 >= v2.6.2
+      # early-returns from its top-level CMakeLists when the variable is
+      # DEFINED (anti-recursion for subdirectory builds), which skips the
+      # install-target creation. Let pybind11 auto-detect master-project
+      # status from CMAKE_SOURCE_DIR instead.
       -DPYBIND11_TEST:BOOL=OFF
       -DPYBIND11_INSTALL:BOOL=ON
       #-DPYBIND11_CMAKECONFIG_INSTALL_DIR:STRING="."
