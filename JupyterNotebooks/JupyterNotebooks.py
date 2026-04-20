@@ -48,7 +48,14 @@ class SlicerJupyterServerHelper:
         # PIL may be corrupted on linux, reinstall from pillow
         slicer.util.pip_install('--upgrade pillow --force-reinstall')
 
-      slicer.util.pip_install("jupyter jupyterlab ipywidgets pandas ipyevents ipycanvas --no-warn-script-location")
+      # xeus-python-shell 0.6.x (which xeus-python currently requires up
+      # to and including 0.19) uses IPython internals that were removed
+      # in IPython 9. The 'ipython<9,>=7.21' constraint lives in
+      # xeus-python-shell's 'ipython' extra, so pip doesn't enforce it
+      # when IPython is pulled in transitively by jupyter / ipykernel.
+      # Pin explicitly so fresh installs land on IPython 8.x, which
+      # xeus-python-shell actually works with.
+      slicer.util.pip_install("jupyter jupyterlab ipywidgets pandas ipyevents ipycanvas 'ipython<9' --no-warn-script-location")
 
     # Install Slicer Jupyter kernel
     # Create Slicer kernel
