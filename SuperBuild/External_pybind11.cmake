@@ -26,7 +26,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "v2.8.1"  # v2.9 did not generate any .sln file, which made the build fail
+    "v2.13.6"  # need >= v2.12 for Python 3.12 (switches from direct PyCodeObject access to PyCode API)
     QUIET
     )
 
